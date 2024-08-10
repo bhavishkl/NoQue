@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import Layout from '../../components/layout'
 import { useRouter } from 'next/router'
-import { FiClock, FiMapPin, FiUsers } from 'react-icons/fi'
+import { FiClock, FiMapPin, FiUsers, FiSearch } from 'react-icons/fi'
 import { toast } from 'react-toastify'
 import Link from 'next/link'
 import { useAuth } from '../../hooks/useAuth'
@@ -10,18 +10,20 @@ export default function Queues() {
   const { session, isLoading } = useAuth(true)
   const [queues, setQueues] = useState([])
   const [loading, setLoading] = useState(true)
+  const [searchQuery, setSearchQuery] = useState('')
   const router = useRouter()
+  const { search } = router.query
 
   useEffect(() => {
     if (session) {
       fetchQueues()
     }
-  }, [session])
+  }, [session, search])
 
-  async function fetchQueues() {
+  const fetchQueues = async () => {
     try {
       setLoading(true)
-      const response = await fetch('/api/queue/queues')
+      const response = await fetch(`/api/user/queues${search ? `?search=${search}` : ''}`)
       if (!response.ok) {
         throw new Error('Failed to fetch queues')
       }
@@ -35,6 +37,15 @@ export default function Queues() {
     }
   }
 
+  const handleSearchChange = (e) => {
+    setSearchQuery(e.target.value)
+  }
+
+  const filteredQueues = queues.filter((queue) =>
+    queue.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    queue.location.toLowerCase().includes(searchQuery.toLowerCase())
+  )
+
   if (!session) {
     return (
       <Layout>
@@ -47,6 +58,18 @@ export default function Queues() {
     <Layout>
       <div className="max-w-6xl mx-auto mt-8 px-4">
         <h1 className="text-3xl font-bold mb-6">Available Queues</h1>
+        <div className="mb-6">
+          <div className="relative">
+            <input
+              type="text"
+              placeholder="Search queues..."
+              value={searchQuery}
+              onChange={handleSearchChange}
+              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            <FiSearch className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+          </div>
+        </div>
         {loading ? (
           <div className="text-center py-8">
             <div className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
@@ -54,7 +77,7 @@ export default function Queues() {
           </div>
         ) : (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {queues.map((queue) => (
+            {filteredQueues.map((queue) => (
               <div key={queue.id} className="bg-white rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300 p-6">
                 <h2 className="text-xl font-semibold mb-4">{queue.name}</h2>
                 <div className="flex items-center text-sm text-gray-500 mb-2">
