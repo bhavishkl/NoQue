@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
-import Layout from '../../../components/layout'
+import Layout from '../../components/layout'
 import { toast } from 'react-toastify'
-import { useAuth } from '../../../hooks/useAuth'
+import { useAuth } from '../../hooks/useAuth'
 
 export default function EditQueue() {
   const { session, isLoading } = useAuth(true)
