@@ -12,6 +12,9 @@ export default function QueueDetails() {
   const [loading, setLoading] = useState(true)
   const [isJoined, setIsJoined] = useState(false)
   const [queuePosition, setQueuePosition] = useState(null)
+  const [isJoining, setIsJoining] = useState(false)
+  const [isLeaving, setIsLeaving] = useState(false)
+  const [isRefreshing, setIsRefreshing] = useState(false)
   const session = useSession()
   const router = useRouter()
   const { id } = router.query
@@ -25,6 +28,7 @@ export default function QueueDetails() {
   async function fetchQueueDetails() {
     try {
       setLoading(true)
+      setIsRefreshing(true)
       const [queueResponse, joinedResponse, positionResponse] = await Promise.all([
         fetch(`/api/queue/${id}`),
         fetch(`/api/queue/check-joined?queueId=${id}`),
@@ -49,11 +53,13 @@ export default function QueueDetails() {
       toast.error('Failed to fetch queue details. Please try again.')
     } finally {
       setLoading(false)
+      setIsRefreshing(false)
     }
   }
 
   async function handleJoinQueue() {
     try {
+      setIsJoining(true)
       const response = await fetch('/api/queue/join', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -68,11 +74,14 @@ export default function QueueDetails() {
     } catch (error) {
       console.error('Error joining queue:', error)
       toast.error('Failed to join queue. Please try again.')
+    } finally {
+      setIsJoining(false)
     }
   }
 
   async function handleLeaveQueue() {
     try {
+      setIsLeaving(true)
       const response = await fetch('/api/queue/leave', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -87,6 +96,8 @@ export default function QueueDetails() {
     } catch (error) {
       console.error('Error leaving queue:', error)
       toast.error('Failed to leave queue. Please try again.')
+    } finally {
+      setIsLeaving(false)
     }
   }
 
@@ -149,16 +160,18 @@ export default function QueueDetails() {
           {isJoined ? (
             <button
               onClick={handleLeaveQueue}
-              className="w-full bg-red-500 text-white py-2 px-4 rounded hover:bg-red-600 transition duration-200"
+              disabled={isLeaving}
+              className="w-full bg-red-500 text-white py-2 px-4 rounded hover:bg-red-600 transition duration-200 disabled:opacity-50"
             >
-              Leave Queue
+              {isLeaving ? 'Leaving Queue...' : 'Leave Queue'}
             </button>
           ) : (
             <button
               onClick={handleJoinQueue}
-              className="w-full bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 transition duration-200"
+              disabled={isJoining}
+              className="w-full bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 transition duration-200 disabled:opacity-50"
             >
-              Join Queue
+              {isJoining ? 'Joining Queue...' : 'Join Queue'}
             </button>
           )}
           <Link href={`/queue/queue-members?id=${id}`}>
@@ -168,10 +181,11 @@ export default function QueueDetails() {
           </Link>
           <button
             onClick={fetchQueueDetails}
-            className="w-full mt-4 bg-gray-500 text-white py-2 px-4 rounded hover:bg-gray-600 transition duration-200 flex items-center justify-center"
+            disabled={isRefreshing}
+            className="w-full mt-4 bg-gray-500 text-white py-2 px-4 rounded hover:bg-gray-600 transition duration-200 flex items-center justify-center disabled:opacity-50"
           >
-            <FiRefreshCw className="mr-2" />
-            Refresh Queue Status
+            <FiRefreshCw className={`mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
+            {isRefreshing ? 'Refreshing...' : 'Refresh Queue Status'}
           </button>
         </div>
       </div>

@@ -10,6 +10,7 @@ export default function SignIn() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState(null)
+  const [loading, setLoading] = useState(false)
   const supabase = useSupabaseClient()
   const router = useRouter()
   const [showPassword, setShowPassword] = useState(false)
@@ -17,6 +18,7 @@ export default function SignIn() {
   const handleSignIn = async (e) => {
     e.preventDefault()
     setError(null)
+    setLoading(true)
 
     try {
       const { error } = await supabase.auth.signInWithPassword({ email, password })
@@ -25,6 +27,8 @@ export default function SignIn() {
       router.push('/user/home')
     } catch (error) {
       setError(error.message)
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -48,6 +52,7 @@ export default function SignIn() {
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
                 required
+                disabled={loading}
               />
               <div className="relative">
                 <input
@@ -57,17 +62,23 @@ export default function SignIn() {
                   onChange={(e) => setPassword(e.target.value)}
                   className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
                   required
+                  disabled={loading}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                  disabled={loading}
                 >
                   {showPassword ? <FiEyeOff className="text-gray-500" /> : <FiEye className="text-gray-500" />}
                 </button>
               </div>
-              <button type="submit" className="w-full px-4 py-2 text-white bg-blue-500 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-                Sign In
+              <button 
+                type="submit" 
+                className="w-full px-4 py-2 text-white bg-blue-500 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
+                disabled={loading}
+              >
+                {loading ? 'Signing In...' : 'Sign In'}
               </button>
             </form>
           </div>
