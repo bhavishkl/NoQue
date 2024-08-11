@@ -5,6 +5,7 @@ import { FiClock, FiMapPin, FiUsers, FiSearch } from 'react-icons/fi'
 import { toast } from 'react-toastify'
 import Link from 'next/link'
 import { useAuth } from '../../hooks/useAuth'
+import QueuesSkeleton from '../../components/skeletons/QueuesSkeleton';
 
 export default function Queues() {
   const { session, isLoading } = useAuth(true)
@@ -71,10 +72,7 @@ export default function Queues() {
           </div>
         </div>
         {loading ? (
-          <div className="text-center py-8">
-            <div className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
-            <p className="mt-2 text-gray-600">Loading queues...</p>
-          </div>
+          <QueuesSkeleton />
         ) : (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {filteredQueues.map((queue) => (

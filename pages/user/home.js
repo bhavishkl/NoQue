@@ -6,6 +6,7 @@ import QueueCard from '../../components/QueueCard';
 import { FiSearch } from 'react-icons/fi';
 import useSWR from 'swr';
 import { toast } from 'react-toastify';
+import HomeSkeleton from '../../components/skeletons/HomeSkeleton';
 
 const fetcher = (url) => fetch(url).then((res) => res.json());
 
@@ -27,6 +28,14 @@ export default function Home() {
 
   if (error) {
     toast.error('Failed to fetch recent queues. Please try again later.');
+  }
+
+  if (isLoading) {
+    return (
+      <Layout>
+        <HomeSkeleton />
+      </Layout>
+    );
   }
 
   return (
@@ -58,11 +67,7 @@ export default function Home() {
         <div className="w-full mb-12">
           <h2 className="text-2xl font-bold mb-6 text-gray-800">Recent Queues</h2>
           <div className="overflow-x-auto">
-            {isLoading ? (
-              <div className="flex justify-center items-center h-32">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-              </div>
-            ) : recentQueues && recentQueues.length > 0 ? (
+            {recentQueues && recentQueues.length > 0 ? (
               <div className="flex justify-center space-x-6 pb-4">
                 {recentQueues.map((queue) => (
                   <div key={queue.id} className="flex-shrink-0">

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/router'
 import Layout from '../../components/layout'
 import { toast } from 'react-toastify'
+import CreateQueueSkeleton from '../../components/skeletons/CreateQueueSkeleton';
 
 export default function CreateQueue() {
   const [name, setName] = useState('')
@@ -44,7 +45,13 @@ export default function CreateQueue() {
       setLoading(false)
     }
   }
-
+  if (loading) {
+    return (
+      <Layout>
+        <CreateQueueSkeleton />
+      </Layout>
+    )
+  }
   return (
     <Layout>
       <div className="max-w-2xl mx-auto mt-8 p-6 bg-white rounded-lg shadow-md">

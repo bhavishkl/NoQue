@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { FiEdit, FiBarChart2, FiTrash2, FiAlertCircle } from 'react-icons/fi'
 import { toast } from 'react-toastify'
 import { useAuth } from '../../hooks/useAuth'
+import QueueDashboardSkeleton from '../../components/skeletons/QueueDashboardSkeleton';
 
 export default function QueueDashboard() {
   const { session, isLoading } = useAuth(true)
@@ -61,6 +62,14 @@ export default function QueueDashboard() {
     return (
       <Layout>
         <div className="text-center">Not authenticated</div>
+      </Layout>
+    )
+  }
+
+  if (loading) {
+    return (
+      <Layout>
+        <QueueDashboardSkeleton />
       </Layout>
     )
   }

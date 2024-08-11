@@ -5,6 +5,7 @@ import { toast } from 'react-toastify'
 import { FiEdit2, FiSave, FiClock, FiCheckCircle, FiXCircle } from 'react-icons/fi'
 import Image from 'next/image'
 import { useAuth } from '../../hooks/useAuth'
+import ProfileSkeleton from '../../components/skeletons/ProfileSkeleton';
 
 export default function Profile() {
   const [name, setName] = useState('')
@@ -108,10 +109,10 @@ export default function Profile() {
     }
   }
   
-  if (isLoading) {
+  if (loading) {
     return (
       <Layout>
-        <div className="text-center">Loading...</div>
+        <ProfileSkeleton />
       </Layout>
     )
   }

@@ -4,6 +4,7 @@ import { useSession } from '@supabase/auth-helpers-react'
 import Layout from '../../../components/layout'
 import { toast } from 'react-toastify'
 import { FiCheck, FiX } from 'react-icons/fi'
+import ManageQueueSkeleton from '../../../components/skeletons/ManageQueueSkeleton';
 
 export default function ManageQueue() {
   const [queue, setQueue] = useState(null)
@@ -69,7 +70,13 @@ export default function ManageQueue() {
       </Layout>
     )
   }
-
+  if (loading) {
+    return (
+      <Layout>
+        <ManageQueueSkeleton />
+      </Layout>
+    )
+  }
   return (
     <Layout>
       <div className="max-w-4xl mx-auto mt-8 px-4">

@@ -5,6 +5,7 @@ import { useSession } from '@supabase/auth-helpers-react'
 import { FiClock, FiMapPin, FiUsers, FiRefreshCw } from 'react-icons/fi'
 import { toast } from 'react-toastify'
 import Link from 'next/link'
+import QueueDetailsSkeleton from '../../components/skeletons/QueueDetailsSkeleton';
 
 export default function QueueDetails() {
   const [queue, setQueue] = useState(null)
@@ -100,7 +101,7 @@ export default function QueueDetails() {
   if (loading) {
     return (
       <Layout>
-        <div className="text-center">Loading queue details...</div>
+        <QueueDetailsSkeleton />
       </Layout>
     )
   }
