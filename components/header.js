@@ -43,7 +43,7 @@ const Header = () => {
   };
 
   const navItems = [
-    { href: '/home', icon: FiHome, label: 'Home' },
+    { href: '/user/home', icon: FiHome, label: 'Home' },
     { href: '/user/queues', icon: FiList, label: 'Queues' },
     { href: '/queue/create-queue', icon: FiPlusCircle, label: 'Create Queue' },
     { href: '/user/profile', icon: FiUser, label: 'Profile' },
