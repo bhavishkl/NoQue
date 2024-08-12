@@ -206,14 +206,14 @@ export default function Home({ session }) {
 }
 
 export async function getServerSideProps(context) {
-  const start = Date.now()
+  const start = performance.now()
   const supabase = createPagesServerClient(context)
   const {
     data: { session },
   } = await supabase.auth.getSession()
 
-  const end = Date.now()
-  console.log(`SSR took ${end - start} ms`)
+  const end = performance.now()
+  console.log(`SSR took ${(end - start).toFixed(2)} ms`)
 
   return {
     props: {
