@@ -1,32 +1,21 @@
 import Head from 'next/head'
 import Image from 'next/image'
 import Link from 'next/link'
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/router'
-import { useAuth } from '../hooks/useAuth'
+import { createPagesServerClient } from '@supabase/auth-helpers-nextjs'
 
-export default function Home() {
-  const { session, isLoading } = useAuth()
+export default function Home({ session }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const router = useRouter()
 
-  useEffect(() => {
-    if (session) {
-      router.push('/user/home')
-    }
-  }, [session, router])
-
-  const handleLogout = async () => {
-    const { error } = await supabase.auth.signOut()
-    if (error) console.log('Error logging out:', error.message)
+  if (session) {
+    router.push('/user/home')
+    return null
   }
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen)
-  }
-
-  if (session) {
-    return null // or a loading spinner if you prefer
   }
 
   return (
@@ -214,4 +203,21 @@ export default function Home() {
       </footer>
     </div>
   )
+}
+
+export async function getServerSideProps(context) {
+  const start = Date.now()
+  const supabase = createPagesServerClient(context)
+  const {
+    data: { session },
+  } = await supabase.auth.getSession()
+
+  const end = Date.now()
+  console.log(`SSR took ${end - start} ms`)
+
+  return {
+    props: {
+      session,
+    },
+  }
 }
