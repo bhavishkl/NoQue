@@ -20,11 +20,27 @@ export default async function handler(req, res) {
         // Call the store-history function directly
         await storeHistory(req, res, { memberId, queueId, status })
 
-        // Decrement the member_count in the queues table
-        const { data: updatedQueue, error: updateError } = await supabase.rpc('decrement_queue_member_count', {
-          queue_id: queueId
-        })
+        // Decrement the member_count and update total_estimated_wait_time in the queues table
+const { data: updatedQueue, error: updateError } = await supabase
+.from('queues')
+.select('member_count, estimated_service_time')
+.eq('id', queueId)
+.single()
 
+if (updateError) throw updateError
+
+const newMemberCount = updatedQueue.member_count - 1
+const newEstimatedWaitTime = newMemberCount > 0 ? newMemberCount * updatedQueue.estimated_service_time : 0
+
+const { error: updateQueueError } = await supabase
+.from('queues')
+.update({ 
+  member_count: newMemberCount,
+  total_estimated_wait_time: newEstimatedWaitTime
+})
+.eq('id', queueId)
+
+if (updateQueueError) throw updateQueueError
         if (updateError) throw updateError
       
         return res.status(200).json({ message: 'Member status updated and removed from queue' })

@@ -1,7 +1,11 @@
 import { useState } from 'react';
 import Head from 'next/head';
 import Header from './header';
-import BottomBar from './BottomBar';
+import dynamic from 'next/dynamic';
+
+const DynamicBottomBar = dynamic(() => import('./BottomBar'), {
+  ssr: false
+});
 
 const Layout = ({ children }) => {
   return (
@@ -18,7 +22,7 @@ const Layout = ({ children }) => {
         {children}
       </main>
 
-      <BottomBar />
+      <DynamicBottomBar />
     </div>
   );
 };

@@ -10,7 +10,9 @@ export default function Home({ session }) {
   const router = useRouter()
 
   if (session) {
-    router.push('/user/home')
+    if (typeof window !== 'undefined') {
+      router.push('/user/home')
+    }
     return null
   }
 

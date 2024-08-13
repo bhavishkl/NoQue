@@ -1,24 +1,22 @@
-import { useState, useEffect } from 'react'
-import { useSession, useSupabaseClient } from '@supabase/auth-helpers-react'
+import { useEffect } from 'react'
+import { useSelector, useDispatch } from 'react-redux'
 import { useRouter } from 'next/router'
+import { checkAuthState } from '../redux/slices/authSlice'
 
 export function useAuth(requireAuth = false) {
-  const [isLoading, setIsLoading] = useState(true)
-  const session = useSession()
-  const supabase = useSupabaseClient()
+  const dispatch = useDispatch()
   const router = useRouter()
+  const { isAuthenticated, user, loading } = useSelector((state) => state.auth)
 
   useEffect(() => {
-    async function checkSession() {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (!session && requireAuth) {
-        router.push('/signin')
-      }
-      setIsLoading(false)
+    dispatch(checkAuthState())
+  }, [dispatch])
+
+  useEffect(() => {
+    if (!loading && requireAuth && !isAuthenticated) {
+      router.push('/signin')
     }
+  }, [loading, requireAuth, isAuthenticated, router])
 
-    checkSession()
-  }, [supabase, router, requireAuth])
-
-  return { isLoading, session }
+  return { isLoading: loading, session: isAuthenticated ? user : null, isAuthenticated }
 }

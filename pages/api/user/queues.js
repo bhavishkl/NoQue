@@ -11,13 +11,13 @@ export default async function handler(req, res) {
   const { search } = req.query;
 
   try {
-    let query = supabase.from('queues').select('*');
+    let query = supabase.from('queues').select('*, average_rating');
 
-    if (search) {
-      query = query.ilike('name', `%${search}%`);
-    }
+if (search) {
+  query = query.ilike('name', `%${search}%`);
+}
 
-    const { data, error } = await query;
+const { data, error } = await query;
 
     if (error) throw error;
 

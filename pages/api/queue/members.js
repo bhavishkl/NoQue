@@ -34,7 +34,7 @@ const members = queueMembers.map((member, index) => ({
   joinTime: member.created_at
 }));
 
-      return res.status(200).json({ members, count });
+return res.status(200).json({ members, count });
     } catch (error) {
       console.error('Unexpected error:', error);
       return res.status(500).json({ error: 'An unexpected error occurred' });

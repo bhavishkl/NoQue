@@ -1,30 +1,35 @@
 import Link from 'next/link';
 import { FiClock, FiMapPin, FiUsers } from 'react-icons/fi';
+import { FaStar } from 'react-icons/fa';
 
 export default function QueueCard({ queue }) {
   return (
-    <Link href={`/queue/${queue.id}`}>
-      <div className="bg-white rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300 p-6 w-72 flex flex-col h-full">
-        <h2 className="text-xl font-semibold mb-4 text-gray-800">{queue.name}</h2>
-        <div className="flex-grow">
-          <div className="flex items-center text-sm text-gray-600 mb-2">
-            <FiMapPin className="mr-2 text-blue-500" />
-            <span>{queue.location}</span>
-          </div>
-          <div className="flex items-center text-sm text-gray-600 mb-2">
-            <FiClock className="mr-2 text-green-500" />
-            <span>Est. wait: {queue.estimated_service_time} min</span>
-          </div>
-          <div className="flex items-center text-sm text-gray-600 mb-2">
-            <FiUsers className="mr-2 text-purple-500" />
-            <span>Capacity: {queue.max_capacity}</span>
+    <Link href={`/queue/${queue.id}`} passHref>
+      <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200 hover:shadow-lg transition-shadow duration-300 relative cursor-pointer min-w-[300px]">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-semibold text-[#292680] truncate">{queue.name}</h2>
+          <div className="flex items-center bg-yellow-100 px-2 py-1 rounded mx-4">
+            <FaStar className="text-yellow-500 mr-1" />
+            <span className="font-medium text-[#292680]">{queue.average_rating.toFixed(1)}</span>
           </div>
         </div>
-        <div className="mt-4 pt-4 border-t border-gray-200">
-          <div className="flex items-center justify-between text-sm">
-            <span className="font-medium text-gray-700">Current members:</span>
-            <span className="font-bold text-blue-600">{queue.member_count}</span>
+        <div className="space-y-2 mb-4">
+          <div className="flex items-center text-sm text-gray-600">
+            <FiMapPin className="mr-2 text-[#6f6cd3]" />
+            <span className="truncate">{queue.location}</span>
           </div>
+          <div className="flex items-center text-sm text-gray-600">
+            <FiClock className="mr-2 text-[#6f6cd3]" />
+            <span>Est. total wait: <strong>{queue.total_estimated_wait_time} min</strong></span>
+          </div>
+          <div className="flex items-center text-sm text-gray-600">
+            <FiUsers className="mr-2 text-[#6f6cd3]" />
+            <span>Capacity: <strong>{queue.max_capacity}</strong></span>
+          </div>
+        </div>
+        <div className="flex items-center justify-between text-sm border-t border-gray-200 pt-4">
+          <span className="text-gray-700">Current members:</span>
+          <span className="font-semibold text-[#6f6cd3] bg-[#6f6cd3] bg-opacity-10 px-2 py-1 rounded">{queue.member_count}</span>
         </div>
       </div>
     </Link>
