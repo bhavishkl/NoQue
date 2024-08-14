@@ -9,7 +9,7 @@ export default async function handler(req, res) {
   }
 
   if (req.method === 'POST') {
-    const { name, description, location, estimated_service_time, max_capacity } = req.body
+    const { name, description, location, estimated_service_time, max_capacity, city_id, city_name, latitude, longitude } = req.body
 
     try {
       const { data, error } = await supabase
@@ -20,7 +20,11 @@ export default async function handler(req, res) {
           description,
           location,
           estimated_service_time,
-          max_capacity
+          max_capacity,
+          city_id,
+          city_name,
+          latitude,
+          longitude
         })
         .select()
 

@@ -8,6 +8,7 @@ import Link from 'next/link'
 import { useAuth } from '../../hooks/useAuth'
 import QueuesSkeleton from '../../components/skeletons/QueuesSkeleton'
 import { useApi } from '../../hooks/useApi'
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 
 const QueueItem = React.memo(({ queue }) => (
   <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200 hover:shadow-lg transition-shadow duration-300">
@@ -48,9 +49,71 @@ export default function Queues() {
   const { isLoading: authLoading, isAuthenticated } = useAuth(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [sortBy, setSortBy] = useState('name')
+  const [userLocation, setUserLocation] = useState(null)
   const router = useRouter()
   const { search } = router.query
-  const { data: queues, isLoading: queuesLoading, isError } = useApi(isAuthenticated ? `/api/user/queues${search ? `?search=${search}` : ''}` : null)
+  const { data: queues, isLoading: queuesLoading, isError, mutate } = useApi(
+    isAuthenticated && userLocation
+      ? `/api/user/queues?lat=${userLocation.latitude}&lon=${userLocation.longitude}${search ? `&search=${search}` : ''}`
+      : null
+  )
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      getUserLocation(true);
+      console.log('Calling getUserLocation with high accuracy');
+    }
+  }, [isAuthenticated]);
+
+  useEffect(() => {
+    if (queues) {
+      console.log('Queues received:', queues);
+    }
+  }, [queues]);
+
+  const getUserLocation = (highAccuracy = true) => {
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const userLat = position.coords.latitude;
+          const userLon = position.coords.longitude;
+          console.log('User location:', userLat, userLon);
+          console.log('Accuracy:', position.coords.accuracy, 'meters');
+          
+          if (highAccuracy && position.coords.accuracy > 100) {
+            console.log('Location not accurate enough, retrying...');
+            setTimeout(() => getUserLocation(true), 1000);
+            return;
+          }
+          
+          setUserLocation({
+            latitude: userLat,
+            longitude: userLon
+          });
+          console.log('User location set:', userLat, userLon);
+        },
+        (error) => {
+          console.error("Error getting user location:", error);
+          if (highAccuracy) {
+            console.log('Retrying with low accuracy...');
+            setTimeout(() => getUserLocation(false), 1000);
+          } else {
+            toast.error("Unable to get your location. Showing all queues.");
+            setUserLocation({ latitude: null, longitude: null });
+          }
+        },
+        {
+          enableHighAccuracy: highAccuracy,
+          timeout: 10000,
+          maximumAge: 0
+        }
+      );
+    } else {
+      console.error("Geolocation is not supported by this browser.");
+      toast.error("Geolocation is not supported. Showing all queues.");
+      setUserLocation({ latitude: null, longitude: null });
+    }
+  };
 
   const handleSearchChange = useCallback((e) => {
     setSearchQuery(e.target.value)
@@ -61,16 +124,17 @@ export default function Queues() {
   }, [])
 
   const filteredAndSortedQueues = Array.isArray(queues) ? queues
-    .filter((queue) =>
-      queue.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      queue.location.toLowerCase().includes(searchQuery.toLowerCase())
-    )
-    .sort((a, b) => {
-      if (sortBy === 'name') return a.name.localeCompare(b.name)
-      if (sortBy === 'rating') return b.average_rating - a.average_rating
-      if (sortBy === 'wait_time') return a.estimated_service_time - b.estimated_service_time
-      return 0
-    }) : []
+  .filter((queue) =>
+    queue.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    queue.cities.name.toLowerCase().includes(searchQuery.toLowerCase())
+  )
+  .sort((a, b) => {
+    if (sortBy === 'name') return a.name.localeCompare(b.name)
+    if (sortBy === 'rating') return b.average_rating - a.average_rating
+    if (sortBy === 'wait_time') return a.total_estimated_wait_time - b.total_estimated_wait_time
+    if (sortBy === 'distance') return a.distance - b.distance
+    return 0
+  }) : []
 
   useEffect(() => {
     if (isError) {
