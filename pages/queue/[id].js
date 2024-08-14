@@ -10,6 +10,7 @@ import QueueDetailsSkeleton from '../../components/skeletons/QueueDetailsSkeleto
 import { useApi } from '../../hooks/useApi'
 import { useAuth } from '../../hooks/useAuth'
 import ReviewList from '../../components/ReviewList'
+import { useSupabaseClient } from '@supabase/auth-helpers-react'
 
 const ReviewForm = dynamic(() => import('../../components/ReviewForm'), {
   loading: () => <p className="text-center text-gray-500">Loading review form...</p>,
@@ -23,12 +24,30 @@ export default function QueueDetails() {
   const router = useRouter()
   const { id } = router.query
   const { data: queue, isLoading: queueLoading, isError, mutate } = useApi(isAuthenticated ? `/api/queue/${id}` : null)
+  const [realtimeQueue, setRealtimeQueue] = useState(null)
+  const supabase = useSupabaseClient()
 
   useEffect(() => {
     if (isError) {
       toast.error('Failed to fetch queue details. Please try again.')
     }
   }, [isError])
+
+  useEffect(() => {
+    if (!queue || !isAuthenticated) return
+
+    const channel = supabase
+      .channel(`queue_${id}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'queue_members' }, (payload) => {
+        // Update the queue data when there's a change
+        mutate()
+      })
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [queue, id, isAuthenticated, supabase, mutate])
 
   const handleJoinQueue = useCallback(async (callback) => {
     try {
@@ -99,6 +118,8 @@ export default function QueueDetails() {
     )
   }
 
+  const displayQueue = realtimeQueue || queue
+
   return (
     <Layout>
       <div className="max-w-4xl mx-auto mt-8 px-4">
@@ -122,7 +143,7 @@ export default function QueueDetails() {
             </div>
             <div className="flex items-center text-gray-700">
               <FiUsers className="mr-2 text-indigo-500" />
-              <span>Current members: <strong>{queue.memberCount}</strong></span>
+              <span>Current members: <strong>{displayQueue.memberCount}</strong></span>
             </div>
             <div className="flex items-center text-gray-700 col-span-2">
               <FaStar className="text-yellow-400 mr-2" />
@@ -130,14 +151,14 @@ export default function QueueDetails() {
               <span className="ml-1 text-sm text-gray-500">(<strong>{queue.reviewCount || 0}</strong> reviews)</span>
             </div>
           </div>
-          {queue.userPosition ? (
+          {displayQueue.userPosition ? (
             <div className="bg-blue-100 p-4">
-              <p className="font-bold text-blue-800">Your position in queue: <strong>{queue.userPosition}</strong></p>
-              <p className="text-blue-700">Estimated wait time: <strong>{queue.userEstimatedWaitTime} minutes</strong></p>
+              <p className="font-bold text-blue-800">Your position in queue: <strong>{displayQueue.userPosition}</strong></p>
+              <p className="text-blue-700">Estimated wait time: <strong>{displayQueue.userEstimatedWaitTime} minutes</strong></p>
             </div>
           ) : (
             <div className="bg-yellow-100 p-4">
-              <p className="text-yellow-800">Estimated wait time: <strong>{queue.estimatedWaitTime} minutes</strong></p>
+              <p className="text-yellow-800">Estimated wait time: <strong>{displayQueue.estimatedWaitTime} minutes</strong></p>
             </div>
           )}
           <div className="p-6 flex flex-col sm:flex-row gap-4">
