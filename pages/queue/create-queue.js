@@ -1,10 +1,9 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/router'
 import Layout from '../../components/layout'
 import { toast } from 'react-toastify'
 import CreateQueueSkeleton from '../../components/skeletons/CreateQueueSkeleton'
 import { FiClock, FiMapPin, FiUsers, FiInfo } from 'react-icons/fi'
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 
 export default function CreateQueue() {
   const [name, setName] = useState('')
@@ -13,37 +12,14 @@ export default function CreateQueue() {
   const [estimatedServiceTime, setEstimatedServiceTime] = useState('')
   const [maxCapacity, setMaxCapacity] = useState('')
   const [loading, setLoading] = useState(false)
-  const [cities, setCities] = useState([])
-  const [selectedCity, setSelectedCity] = useState('')
 
   const router = useRouter()
-
-  useEffect(() => {
-    fetchCities()
-  }, [])
-
-  const fetchCities = async () => {
-    try {
-      const supabase = createClientComponentClient()
-      const { data, error } = await supabase
-        .from('cities')
-        .select('id, name, state, latitude, longitude')
-        .order('name', { ascending: true })
-  
-      if (error) throw error
-      setCities(data)
-    } catch (error) {
-      console.error('Error fetching cities:', error)
-      toast.error('Failed to fetch cities. Please try again.')
-    }
-  }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     setLoading(true)
 
     try {
-      const selectedCityData = cities.find(city => city.id === parseInt(selectedCity))
       const response = await fetch('/api/queue/create-queue', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -52,11 +28,7 @@ export default function CreateQueue() {
           description,
           location,
           estimated_service_time: parseInt(estimatedServiceTime),
-          max_capacity: parseInt(maxCapacity),
-          city_id: parseInt(selectedCity),
-          city_name: selectedCityData.name,
-          latitude: selectedCityData.latitude,
-          longitude: selectedCityData.longitude
+          max_capacity: parseInt(maxCapacity)
         }),
       })
 
@@ -111,23 +83,6 @@ export default function CreateQueue() {
               className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
               placeholder="Describe the purpose of this queue"
             />
-          </div>
-          <div>
-            <label htmlFor="city" className="block text-sm font-medium text-gray-700">City</label>
-            <select
-              id="city"
-              value={selectedCity}
-              onChange={(e) => setSelectedCity(e.target.value)}
-              required
-              className="mt-1 block w-full pl-3 pr-10 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-            >
-              <option value="">Select a city</option>
-              {cities.map((city) => (
-                <option key={city.id} value={city.id}>
-                  {city.name}, {city.state}
-                </option>
-              ))}
-            </select>
           </div>
           <div>
             <label htmlFor="location" className="block text-sm font-medium text-gray-700">Location</label>
