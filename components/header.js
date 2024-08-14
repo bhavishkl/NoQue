@@ -64,7 +64,7 @@ const Header = () => {
               <div className="flex justify-between items-center py-4">
                 <div className="flex items-center">
                   <Link href="/user/home">
-                    <span className="text-2xl font-bold text-[#3532a7] cursor-pointer">Wique</span>
+                    <span className="text-2xl font-bold text-[#3532a7] cursor-pointer">NoQue</span>
                   </Link>
                 </div>
                 <div className="hidden lg:flex items-center space-x-4">

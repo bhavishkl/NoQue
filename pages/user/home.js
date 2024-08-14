@@ -40,13 +40,13 @@ export default function Home({ initialRecentQueues }) {
   return (
     <Layout>
       <Head>
-        <title>Wique | Home</title>
+        <title>Home</title>
         <meta name="description" content="Manage your queues efficiently with Wique. Search for queue management solutions and view your recent queues." />
         <meta name="keywords" content="queue management, Wique, recent queues" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>
       <div className="container mx-auto px-4 flex flex-col items-center">
-        <h1 className="text-4xl font-bold text-center mb-4 text-[#292680]">Welcome to Wique</h1>
+        <h1 className="text-4xl font-bold text-center mb-4 text-[#292680]">Welcome to NoQue</h1>
         
         <div className="w-full max-w-2xl mb-8">
           <form onSubmit={handleSearch} className="flex items-center">
