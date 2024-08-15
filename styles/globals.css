@@ -10,3 +10,13 @@
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+/* Toastify custom styles */
+@media (max-width: 640px) {
+  .Toastify__toast-container {
+    width: 80% !important;
+    left: 60% !important;
+    transform: translateX(-50%) translateY(60px) !important;
+    top: 1rem !important;
+  }
+}

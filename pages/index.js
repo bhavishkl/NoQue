@@ -22,7 +22,7 @@ export default function Home({ session }) {
   return (
     <div className="flex flex-col min-h-screen bg-gradient-to-br from-gray-900 to-indigo-900 text-white">
       <Head>
-        <title>QueueMaster - Next-Gen Queue Management</title>
+        <title>NoQUe - Next-Gen Queue Management</title>
         <meta name="description" content="QueueMaster: Revolutionary queue management solutions for modern businesses" />
         <link rel="icon" href="/favicon.ico" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -31,7 +31,7 @@ export default function Home({ session }) {
       <header className="fixed w-full z-10 bg-opacity-90 bg-gray-900 backdrop-filter backdrop-blur-lg">
         <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            <Link href="/" className="text-white font-bold text-xl">QueueMaster</Link>
+            <Link href="/" className="text-white font-bold text-xl">NoQue</Link>
             <div className="hidden md:flex space-x-4">
               <Link href="#features" className="text-gray-300 hover:text-white transition duration-300">Features</Link>
               <Link href="#how-it-works" className="text-gray-300 hover:text-white transition duration-300">How It Works</Link>
