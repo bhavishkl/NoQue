@@ -7,7 +7,6 @@ import { useState } from 'react'
 import Header from '../components/header'
 import { Provider } from 'react-redux'
 import { store } from '../redux/store'
-import { NextUIProvider } from '@nextui-org/react'
 
 function MyApp({ Component, pageProps }) {
   const [supabaseClient] = useState(() => createPagesBrowserClient())
@@ -15,11 +14,9 @@ function MyApp({ Component, pageProps }) {
   return (
     <Provider store={store}>
       <SessionContextProvider supabaseClient={supabaseClient} initialSession={pageProps.initialSession}>
-        <NextUIProvider>
-          <Header />
-          <Component {...pageProps} />
-          <ToastContainer />
-        </NextUIProvider>
+        <Header />
+        <Component {...pageProps} />
+        <ToastContainer />
       </SessionContextProvider>
     </Provider>
   )
