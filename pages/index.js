@@ -1,23 +1,40 @@
 import Head from 'next/head'
 import Image from 'next/image'
 import Link from 'next/link'
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
-import { createPagesServerClient } from '@supabase/auth-helpers-nextjs'
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import { motion } from 'framer-motion'
+import { CircularProgress } from '@nextui-org/react'
 
-export default function Home({ session }) {
+export default function Home() {
   const router = useRouter()
+  const [loading, setLoading] = useState(true)
+  const supabase = createClientComponentClient()
 
   useEffect(() => {
-    if (session) {
-      router.push('/user/home')
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (session) {
+        router.push('/user/home')
+      } else {
+        setLoading(false)
+      }
     }
-  }, [session, router])
 
-  if (session) {
-    return null
+    checkSession()
+  }, [router, supabase])
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <CircularProgress size="lg" color="primary" aria-label="Loading..." />
+        <span className="ml-3 text-xl font-semibold text-blue-500">Loading...</span>
+      </div>
+    );
   }
+
+  // Rest of your component code...
 
   return (
     <div className="flex flex-col min-h-screen bg-gradient-to-br from-gray-900 to-indigo-900 text-white">
