@@ -1,4 +1,15 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# NoQue - Next-Gen Queue Management
+
+NoQue is a revolutionary queue management solution built with Next.js, designed to streamline operations, enhance customer experience, and boost efficiency for modern businesses.
+
+## Features
+
+- Real-time queue analytics
+- Multi-channel integration
+- Advanced security measures
+- AI-powered predictions for queue optimization
+- Customizable workflows
+- Valuable customer insights
 
 ## Getting Started
 
@@ -16,25 +27,62 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `pages/index.js`. The page auto-updates as you edit the file.
+## Tech Stack
 
-[API routes](https://nextjs.org/docs/api-routes/introduction) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.js`.
+- Next.js
+- React
+- Supabase for authentication and database
+- Redux for state management
+- Tailwind CSS for styling
+- React Icons for iconography
+- React Toastify for notifications
+- SWR for data fetching
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/api-routes/introduction) instead of React pages.
+## Project Structure
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+- `/pages`: Contains all the pages of the application
+- `/components`: Reusable React components
+- `/hooks`: Custom React hooks
+- `/redux`: Redux store and slices
+- `/styles`: Global styles and Tailwind CSS configuration
+- `/public`: Static assets
 
-## Learn More
+## Key Components
 
-To learn more about Next.js, take a look at the following resources:
+- `Layout`: Wrapper component for consistent page structure
+- `Header`: Navigation component
+- `QueueCard`: Displays individual queue information
+- `ReviewForm` and `ReviewList`: Handles queue reviews
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## API Routes
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+- `/api/user`: User-related operations
+- `/api/queue`: Queue management operations
+- `/api/reviews`: Handling queue reviews
 
-## Deploy on Vercel
+## Authentication
+
+This project uses Supabase for authentication. Users can sign up, sign in, and manage their profiles.
+
+## Deployment
 
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+
+## Learn More
+
+To learn more about the technologies used in this project, check out the following resources:
+
+- [Next.js Documentation](https://nextjs.org/docs)
+- [Supabase Documentation](https://supabase.io/docs)
+- [Redux Toolkit Documentation](https://redux-toolkit.js.org/)
+- [Tailwind CSS Documentation](https://tailwindcss.com/docs)
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## License
+
+This project is open source and available under the [MIT License](LICENSE).
