@@ -126,7 +126,7 @@ const Header = () => {
           )}
 
           {/* Spacer to push content below the fixed header */}
-          <div className="h-24"></div>
+          <div className="h-12"></div>
         </>
       )}
     </>
