@@ -1,9 +1,9 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
 import Layout from '../../components/layout'
 import { toast } from 'react-toastify'
 import CreateQueueSkeleton from '../../components/skeletons/CreateQueueSkeleton'
-import { FiClock, FiMapPin, FiUsers, FiInfo } from 'react-icons/fi'
+import { FiClock, FiMapPin, FiUsers, FiInfo, FiTag } from 'react-icons/fi'
 
 export default function CreateQueue() {
   const [name, setName] = useState('')
@@ -11,9 +11,27 @@ export default function CreateQueue() {
   const [location, setLocation] = useState('')
   const [estimatedServiceTime, setEstimatedServiceTime] = useState('')
   const [maxCapacity, setMaxCapacity] = useState('')
+  const [categoryId, setCategoryId] = useState('')
+  const [categories, setCategories] = useState([])
   const [loading, setLoading] = useState(false)
 
   const router = useRouter()
+
+  useEffect(() => {
+    fetchCategories()
+  }, [])
+
+  const fetchCategories = async () => {
+    try {
+      const response = await fetch('/api/queue/category')
+      if (!response.ok) throw new Error('Failed to fetch categories')
+      const data = await response.json()
+      setCategories(data)
+    } catch (error) {
+      console.error('Error fetching categories:', error)
+      toast.error('Failed to fetch categories')
+    }
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -28,7 +46,8 @@ export default function CreateQueue() {
           description,
           location,
           estimated_service_time: parseInt(estimatedServiceTime),
-          max_capacity: parseInt(maxCapacity)
+          max_capacity: parseInt(maxCapacity),
+          category_id: categoryId
         }),
       })
 
@@ -135,6 +154,26 @@ export default function CreateQueue() {
                 className="block w-full pl-10 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                 placeholder="Enter maximum capacity"
               />
+            </div>
+          </div>
+          <div>
+            <label htmlFor="category" className="block text-sm font-medium text-gray-700">Category</label>
+            <div className="mt-1 relative rounded-md shadow-sm">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <FiTag className="h-5 w-5 text-gray-400" />
+              </div>
+              <select
+                id="category"
+                value={categoryId}
+                onChange={(e) => setCategoryId(e.target.value)}
+                required
+                className="block w-full pl-10 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+              >
+                <option value="">Select a category</option>
+                {categories.map((category) => (
+                  <option key={category.id} value={category.id}>{category.name}</option>
+                ))}
+              </select>
             </div>
           </div>
           <div className="bg-blue-50 p-4 rounded-md">

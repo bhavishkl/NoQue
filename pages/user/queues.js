@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useEffect } from 'react'
 import Layout from '../../components/layout'
 import { useRouter } from 'next/router'
-import { FiClock, FiMapPin, FiUsers, FiSearch, FiFilter } from 'react-icons/fi'
+import { FiClock, FiMapPin, FiUsers, FiSearch, FiFilter, FiChevronLeft, FiChevronRight } from 'react-icons/fi'
 import { FaStar } from 'react-icons/fa'
 import { toast } from 'react-toastify'
 import Link from 'next/link'
@@ -44,39 +44,101 @@ const QueueItem = React.memo(({ queue }) => (
   </div>
 ))
 
+const Pagination = ({ currentPage, totalPages, onPageChange }) => {
+  const pageNumbers = []
+  const maxVisiblePages = 5
+
+  let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2))
+  let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1)
+
+  if (endPage - startPage + 1 < maxVisiblePages) {
+    startPage = Math.max(1, endPage - maxVisiblePages + 1)
+  }
+
+  for (let i = startPage; i <= endPage; i++) {
+    pageNumbers.push(i)
+  }
+
+  return (
+    <nav className="flex justify-center mt-8">
+      <ul className="flex items-center">
+        <li className="mx-1">
+          <button
+            onClick={() => onPageChange(Math.max(1, currentPage - 1))}
+            disabled={currentPage === 1}
+            className="px-3 py-2 rounded bg-gray-200 text-gray-700 hover:bg-gray-300 disabled:opacity-50"
+          >
+            <FiChevronLeft />
+          </button>
+        </li>
+        {pageNumbers.map((number) => (
+          <li key={number} className="mx-1">
+            <button
+              onClick={() => onPageChange(number)}
+              className={`px-4 py-2 rounded ${
+                currentPage === number
+                  ? 'bg-[#6f6cd3] text-white'
+                  : 'bg-white text-[#6f6cd3] border border-[#6f6cd3] hover:bg-[#6f6cd3] hover:text-white'
+              }`}
+            >
+              {number}
+            </button>
+          </li>
+        ))}
+        <li className="mx-1">
+          <button
+            onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
+            disabled={currentPage === totalPages}
+            className="px-3 py-2 rounded bg-gray-200 text-gray-700 hover:bg-gray-300 disabled:opacity-50"
+          >
+            <FiChevronRight />
+          </button>
+        </li>
+      </ul>
+    </nav>
+  )
+}
+
 export default function Queues() {
   const { isLoading: authLoading, isAuthenticated } = useAuth(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [sortBy, setSortBy] = useState('name')
+  const [currentPage, setCurrentPage] = useState(1)
+  const [queuesPerPage] = useState(9)
   const router = useRouter()
   const { search } = router.query
-  const { data: queues, isLoading: queuesLoading, isError } = useApi(isAuthenticated ? `/api/user/queues${search ? `?search=${search}` : ''}` : null)
+  const { data, isLoading: queuesLoading, isError, mutate } = useApi(
+    isAuthenticated
+      ? `/api/user/queues?page=${currentPage}&limit=${queuesPerPage}&sortBy=${sortBy}${search ? `&search=${search}` : ''}`
+      : null
+  )
 
   const handleSearchChange = useCallback((e) => {
     setSearchQuery(e.target.value)
+    setCurrentPage(1)
   }, [])
 
   const handleSortChange = useCallback((e) => {
     setSortBy(e.target.value)
+    setCurrentPage(1)
   }, [])
 
-  const filteredAndSortedQueues = Array.isArray(queues) ? queues
-    .filter((queue) =>
-      queue.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      queue.location.toLowerCase().includes(searchQuery.toLowerCase())
-    )
-    .sort((a, b) => {
-      if (sortBy === 'name') return a.name.localeCompare(b.name)
-      if (sortBy === 'rating') return b.average_rating - a.average_rating
-      if (sortBy === 'wait_time') return a.estimated_service_time - b.estimated_service_time
-      return 0
-    }) : []
+  const handlePageChange = useCallback((pageNumber) => {
+    setCurrentPage(pageNumber)
+  }, [])
+
+  const filteredAndSortedQueues = data?.queues || []
+  const totalPages = Math.ceil(data?.total / queuesPerPage) || 0
 
   useEffect(() => {
     if (isError) {
       toast.error('Failed to fetch queues. Please try again.')
     }
   }, [isError])
+
+  useEffect(() => {
+    mutate()
+  }, [currentPage, sortBy, search, mutate])
 
   if (authLoading || queuesLoading) {
     return (
@@ -124,11 +186,18 @@ export default function Queues() {
             <p className="text-sm sm:text-base text-gray-500">Try adjusting your search or check back later for new queues.</p>
           </div>
         ) : (
-          <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-            {filteredAndSortedQueues.map((queue) => (
-              <QueueItem key={queue.id} queue={queue} />
-            ))}
-          </div>
+          <>
+            <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+              {filteredAndSortedQueues.map((queue) => (
+                <QueueItem key={queue.id} queue={queue} />
+              ))}
+            </div>
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={handlePageChange}
+            />
+          </>
         )}
       </div>
     </Layout>

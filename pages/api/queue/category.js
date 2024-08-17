@@ -8,32 +8,22 @@ export default async function handler(req, res) {
     return res.status(401).json({ error: 'Not authenticated' })
   }
 
-  if (req.method === 'POST') {
-    const { name, description, location, estimated_service_time, max_capacity, category_id } = req.body
-
+  if (req.method === 'GET') {
     try {
       const { data, error } = await supabase
-        .from('queues')
-        .insert({
-          owner_id: session.user.id,
-          name,
-          description,
-          location,
-          estimated_service_time,
-          max_capacity,
-          category_id
-        })
-        .select()
+        .from('categories')
+        .select('*')
+        .order('name', { ascending: true })
 
       if (error) throw error
 
       return res.status(200).json(data)
     } catch (error) {
-      console.error('Error creating queue:', error)
-      return res.status(500).json({ error: 'Error creating queue' })
+      console.error('Error fetching categories:', error)
+      return res.status(500).json({ error: 'Error fetching categories' })
     }
   }
 
-  res.setHeader('Allow', ['POST'])
+  res.setHeader('Allow', ['GET'])
   res.status(405).end(`Method ${req.method} Not Allowed`)
 }

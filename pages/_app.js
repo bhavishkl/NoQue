@@ -7,17 +7,20 @@ import { useState } from 'react'
 import Header from '../components/header'
 import { Provider } from 'react-redux'
 import { store } from '../redux/store'
+import ErrorBoundary from '../components/ErrorBoundary'
 
 function MyApp({ Component, pageProps }) {
   const [supabaseClient] = useState(() => createPagesBrowserClient())
 
   return (
     <Provider store={store}>
-      <SessionContextProvider supabaseClient={supabaseClient} initialSession={pageProps.initialSession}>
-        <Header />
-        <Component {...pageProps} />
-        <ToastContainer />
-      </SessionContextProvider>
+      <ErrorBoundary>
+        <SessionContextProvider supabaseClient={supabaseClient} initialSession={pageProps.initialSession}>
+          <Header />
+          <Component {...pageProps} />
+          <ToastContainer />
+        </SessionContextProvider>
+      </ErrorBoundary>
     </Provider>
   )
 }

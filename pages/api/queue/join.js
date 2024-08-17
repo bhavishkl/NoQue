@@ -24,32 +24,20 @@ export default async function handler(req, res) {
         throw error
       }
 
+      // Insert into queue_member_history
+      await supabase.from('queue_member_history').insert({
+        queue_id: queueId,
+        user_id: session.user.id,
+        status: 'joined'
+      })
+
       // Increment the member_count in the queues table
-      const { data: updatedQueue, error: updateError } = await supabase.rpc('increment_queue_member_count', {
+      await supabase.rpc('increment_queue_member_count', {
         queue_id: queueId
       })
 
-      if (updateError) throw updateError
-
-      // Fetch the updated queue data
-      const { data: updatedQueueData, error: fetchError } = await supabase
-        .from('queues')
-        .select('member_count, estimated_service_time')
-        .eq('id', queueId)
-        .single()
-
-      if (fetchError) throw fetchError
-
-      // Calculate new total estimated wait time
-      const newEstimatedWaitTime = updatedQueueData.member_count * updatedQueueData.estimated_service_time
-
-      // Update the total_estimated_wait_time
-      const { error: updateWaitTimeError } = await supabase
-        .from('queues')
-        .update({ total_estimated_wait_time: newEstimatedWaitTime })
-        .eq('id', queueId)
-
-      if (updateWaitTimeError) throw updateWaitTimeError
+      // Trigger analytics update asynchronously
+      fetch(`/api/queue/update-analytics/${queueId}`, { method: 'POST' })
 
       return res.status(200).json(data)
     } catch (error) {

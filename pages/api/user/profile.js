@@ -1,4 +1,5 @@
 import { createPagesServerClient } from '@supabase/auth-helpers-nextjs'
+import { handleApiError } from '../../../utils/errorHandler'
 
 export default async function handler(req, res) {
   const supabase = createPagesServerClient({ req, res })
@@ -20,8 +21,7 @@ export default async function handler(req, res) {
 
       return res.status(200).json(data)
     } catch (error) {
-      console.error('Error fetching profile:', error)
-      return res.status(500).json({ error: 'Error fetching profile' })
+      return handleApiError(res, error, 'Error fetching profile')
     }
   }
 
@@ -38,8 +38,7 @@ export default async function handler(req, res) {
 
       return res.status(200).json(data)
     } catch (error) {
-      console.error('Error updating profile:', error)
-      return res.status(500).json({ error: 'Error updating profile' })
+      return handleApiError(res, error, 'Error updating profile')
     }
   }
 

@@ -1,51 +1,40 @@
-import React, { useState, useEffect } from 'react';
+import React, { useMemo } from 'react';
 import Link from 'next/link';
 import { FiHome, FiSearch, FiUser } from 'react-icons/fi';
-import { useSupabaseClient } from '@supabase/auth-helpers-react';
 import { useRouter } from 'next/router';
+import { motion } from 'framer-motion';
+import { useUserName } from '../hooks/useUserName';
 
 const BottomBar = () => {
-  const [userName, setUserName] = useState('');
-  const supabase = useSupabaseClient();
+  const userName = useUserName();
   const router = useRouter();
 
-  useEffect(() => {
-    const fetchUserName = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('name')
-          .eq('id', user.id)
-          .single();
-        if (data && !error) {
-          setUserName(data.name || 'User');
-        }
-      }
-    };
-    fetchUserName();
-  }, [supabase]);
+  const isActive = useMemo(() => (path) => router.pathname === path, [router.pathname]);
 
-  const isActive = (path) => router.pathname === path;
+  const navItems = [
+    { href: '/user/home', icon: FiHome, label: 'Home' },
+    { href: '/user/queues', icon: FiSearch, label: 'Queues' },
+    { href: '/user/profile', icon: FiUser, label: userName || 'Profile' },
+  ];
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg sm:hidden">
+    <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg sm:hidden" aria-label="Bottom navigation">
       <div className="flex justify-around items-center h-16">
-        <Link href="/user/home" className={`flex flex-col items-center ${isActive('/user/home') ? 'text-blue-500' : 'text-gray-600'} hover:text-blue-500 transition-colors duration-200`}>
-          <FiHome className={`text-2xl ${isActive('/user/home') ? 'animate-bounce' : ''}`} />
-          <span className="text-xs mt-1 font-medium">Home</span>
-        </Link>
-        <Link href="/user/queues" className={`flex flex-col items-center ${isActive('/user/queues') ? 'text-blue-500' : 'text-gray-600'} hover:text-blue-500 transition-colors duration-200`}>
-          <FiSearch className={`text-2xl ${isActive('/user/queues') ? 'animate-bounce' : ''}`} />
-          <span className="text-xs mt-1 font-medium">Queues</span>
-        </Link>
-        <Link href="/user/profile" className={`flex flex-col items-center ${isActive('/user/profile') ? 'text-blue-500' : 'text-gray-600'} hover:text-blue-500 transition-colors duration-200`}>
-          <FiUser className={`text-2xl ${isActive('/user/profile') ? 'animate-bounce' : ''}`} />
-          <span className="text-xs mt-1 font-medium">{userName}</span>
-        </Link>
+        {navItems.map(({ href, icon: Icon, label }) => (
+          <Link key={href} href={href} className="flex flex-col items-center w-1/3">
+            <motion.div
+              whileTap={{ scale: 0.9 }}
+              whileHover={{ y: -3 }}
+              className={`flex flex-col items-center ${isActive(href) ? 'text-indigo-600' : 'text-gray-600'} hover:text-indigo-500 transition-colors duration-200`}
+            >
+              <Icon className={`text-2xl ${isActive(href) ? 'animate-pulse' : ''}`} aria-hidden="true" />
+              <span className="text-xs mt-1 font-medium">{label}</span>
+            </motion.div>
+          </Link>
+        ))}
       </div>
-    </div>
+    </nav>
   );
 };
 
-export default BottomBar;
+export default React.memo(BottomBar);

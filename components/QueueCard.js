@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { FiClock, FiMapPin, FiUsers } from 'react-icons/fi';
+import { FiClock, FiMapPin, FiUsers, FiTag } from 'react-icons/fi';
 import { FaStar } from 'react-icons/fa';
 
 export default function QueueCard({ queue }) {
@@ -25,6 +25,10 @@ export default function QueueCard({ queue }) {
           <div className="flex items-center text-sm text-gray-600">
             <FiUsers className="mr-2 text-[#6f6cd3]" />
             <span>Capacity: <strong>{queue.max_capacity}</strong></span>
+          </div>
+          <div className="flex items-center text-sm text-gray-600">
+            <FiTag className="mr-2 text-[#6f6cd3]" />
+            <span>Category: <strong>{queue.categories ? queue.categories.name : 'Uncategorized'}</strong></span>
           </div>
         </div>
         <div className="flex items-center justify-between text-sm border-t border-gray-200 pt-4">

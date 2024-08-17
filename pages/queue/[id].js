@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/router'
 import dynamic from 'next/dynamic'
 import Layout from '../../components/layout'
-import { FiClock, FiMapPin, FiUsers, FiRefreshCw, FiAlertCircle } from 'react-icons/fi'
+import { FiClock, FiMapPin, FiUsers, FiRefreshCw, FiAlertCircle, FiTag, FiHash, FiCopy } from 'react-icons/fi'
 import { FaStar } from 'react-icons/fa'
 import { toast } from 'react-toastify'
 import Link from 'next/link'
@@ -149,6 +149,31 @@ export default function QueueDetails() {
               <FaStar className="text-yellow-400 mr-2" />
               <span className="font-semibold"><strong>{queue.average_rating ? queue.average_rating.toFixed(1) : 'N/A'}</strong></span>
               <span className="ml-1 text-sm text-gray-500">(<strong>{queue.reviewCount || 0}</strong> reviews)</span>
+            </div>
+            <div className="flex items-center text-gray-700">
+              <FiTag className="mr-2 text-indigo-500" />
+              <span>Category: <strong>{queue.categories ? queue.categories.name : 'Uncategorized'}</strong></span>
+            </div>
+            <div className="flex items-center text-gray-700 col-span-2">
+              <FiHash className="mr-2 text-indigo-500" />
+              <span>Queue UID: </span>
+              <div className="relative ml-2">
+                <input
+                  type="text"
+                  value={queue.queue_uid || 'N/A'}
+                  readOnly
+                  className="border border-gray-300 rounded px-2 py-1 text-sm font-mono"
+                />
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText(queue.queue_uid);
+                    toast.success('Queue UID copied to clipboard!');
+                  }}
+                  className="absolute right-2 top-1/2 transform -translate-y-1/2 text-blue-500 hover:text-blue-600"
+                >
+                  <FiCopy />
+                </button>
+              </div>
             </div>
           </div>
           {displayQueue.userPosition ? (

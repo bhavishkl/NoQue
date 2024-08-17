@@ -4,6 +4,7 @@ import Layout from '../../components/layout'
 import { useSession } from '@supabase/auth-helpers-react'
 import { FiClock, FiMapPin, FiUsers } from 'react-icons/fi'
 import { toast } from 'react-toastify'
+import { handleClientError } from '../../utils/errorHandler'
 
 export default function QueueDetails() {
   const [queue, setQueue] = useState(null)
@@ -69,13 +70,13 @@ export default function QueueDetails() {
         body: JSON.stringify({ queueId: id }),
       })
       if (!response.ok) {
-        throw new Error('Failed to leave queue')
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to leave queue')
       }
       setIsJoined(false)
       toast.success('Successfully left the queue')
     } catch (error) {
-      console.error('Error leaving queue:', error)
-      toast.error('Failed to leave queue. Please try again.')
+      handleClientError(error, 'Failed to leave queue. Please try again.')
     }
   }
 

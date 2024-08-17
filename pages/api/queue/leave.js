@@ -20,11 +20,20 @@ export default async function handler(req, res) {
       if (error) throw error
 
       // Decrement the member_count in the queues table
-      const { data: updatedQueue, error: updateError } = await supabase.rpc('decrement_queue_member_count', {
+      await supabase.rpc('decrement_queue_member_count', {
         queue_id: queueId
       })
 
-      if (updateError) throw updateError
+      // Update queue_member_history
+      await supabase
+        .from('queue_member_history')
+        .update({ left_at: new Date().toISOString(), status: 'left' })
+        .eq('queue_id', queueId)
+        .eq('user_id', session.user.id)
+        .is('left_at', null)
+
+      // Trigger analytics update asynchronously
+      fetch(`/api/queue/update-analytics/${queueId}`, { method: 'POST' })
 
       return res.status(200).json({ message: 'Successfully left the queue' })
     } catch (error) {

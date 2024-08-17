@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
-import { useSession } from '@supabase/auth-helpers-react'
+import { useSession, useSupabaseClient } from '@supabase/auth-helpers-react'
 import Layout from '../../../components/layout'
 import { toast } from 'react-toastify'
 import { FiCheck, FiX } from 'react-icons/fi'
@@ -13,19 +13,47 @@ export default function ManageQueue() {
   const session = useSession()
   const router = useRouter()
   const { id } = router.query
+  const supabase = useSupabaseClient()
 
   useEffect(() => {
     if (id && session) {
       fetchQueueDetails()
       fetchQueueMembers()
+
+      const channel = supabase
+        .channel(`queue_${id}`)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'queue_members' }, (payload) => {
+          console.log('Change received!', payload)
+          if (payload.eventType === 'INSERT') {
+            toast.info('A new user has joined the queue!', {
+              position: "bottom-right",
+              autoClose: 3000,
+            })
+          } else if (payload.eventType === 'DELETE') {
+            toast.info('A user has left the queue', {
+              position: "bottom-right",
+              autoClose: 3000,
+            })
+          }
+          fetchQueueMembers()
+        })
+        .subscribe()
+
+      return () => {
+        supabase.removeChannel(channel)
+      }
     }
-  }, [id, session])
+  }, [id, session, supabase])
 
   async function fetchQueueDetails() {
     try {
-      const response = await fetch(`/api/queue/${id}`)
-      if (!response.ok) throw new Error('Failed to fetch queue details')
-      const data = await response.json()
+      const { data, error } = await supabase
+        .from('queues')
+        .select('*')
+        .eq('id', id)
+        .single()
+
+      if (error) throw error
       setQueue(data)
     } catch (error) {
       console.error('Error fetching queue details:', error)
@@ -36,10 +64,24 @@ export default function ManageQueue() {
   async function fetchQueueMembers() {
     try {
       setLoading(true)
-      const response = await fetch(`/api/queue/members?queueId=${id}`)
-      if (!response.ok) throw new Error('Failed to fetch queue members')
-      const data = await response.json()
-      setMembers(data.members)
+      const { data, error } = await supabase
+        .from('queue_members')
+        .select(`
+          id,
+          created_at,
+          profiles (name)
+        `)
+        .eq('queue_id', id)
+        .order('created_at', { ascending: true })
+
+      if (error) throw error
+      const formattedMembers = data.map((member, index) => ({
+        id: member.id,
+        position: index + 1,
+        name: member.profiles?.name || 'Anonymous',
+        joinTime: new Date(member.created_at).toLocaleString()
+      }))
+      setMembers(formattedMembers)
     } catch (error) {
       console.error('Error fetching queue members:', error)
       toast.error('Failed to fetch queue members')
@@ -52,15 +94,22 @@ export default function ManageQueue() {
     try {
       const response = await fetch('/api/queue/update-member-status', {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({ memberId, queueId: id, status }),
-      })
-      if (!response.ok) throw new Error('Failed to update member status')
-      await fetchQueueMembers()
-      toast.success(`Member marked as ${status}`)
+      });
+  
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to update member status');
+      }
+  
+      toast.success(`Member marked as ${status}`);
+      fetchQueueMembers();  // Refresh the list after updating
     } catch (error) {
-      console.error('Error updating member status:', error)
-      toast.error('Failed to update member status')
+      console.error('Error updating member status:', error);
+      toast.error('Failed to update member status');
     }
   }
   if (!session) {
@@ -70,6 +119,7 @@ export default function ManageQueue() {
       </Layout>
     )
   }
+
   if (loading) {
     return (
       <Layout>
@@ -77,6 +127,7 @@ export default function ManageQueue() {
       </Layout>
     )
   }
+
   return (
     <Layout>
       <div className="max-w-4xl mx-auto mt-8 px-4">
@@ -84,7 +135,7 @@ export default function ManageQueue() {
         {queue && (
           <div className="mb-6">
             <p className="text-lg text-gray-600">
-              Current members: <span className="font-semibold">{queue.memberCount}</span>
+              Current members: <span className="font-semibold">{members.length}</span>
             </p>
           </div>
         )}
@@ -109,9 +160,7 @@ export default function ManageQueue() {
                   <tr key={member.id}>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{member.position}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{member.name}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {new Date(member.joinTime).toLocaleString()}
-                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{member.joinTime}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <button
                         onClick={() => updateMemberStatus(member.id, 'served')}
