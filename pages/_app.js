@@ -8,6 +8,7 @@ import Header from '../components/header'
 import { Provider } from 'react-redux'
 import { store } from '../redux/store'
 import ErrorBoundary from '../components/ErrorBoundary'
+import '../i18n';
 
 function MyApp({ Component, pageProps }) {
   const [supabaseClient] = useState(() => createPagesBrowserClient())

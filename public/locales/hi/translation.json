@@ -1,0 +1,12 @@
+{
+    "home": "होम",
+    "queues": "क्यूज़",
+    "profile": "प्रोफाइल",
+    "logout": "लॉगआउट",
+    "search": "खोज",
+    "joinQueue": "क्यू में शामिल हों",
+    "leaveQueue": "क्यू छोड़ें",
+    "estimatedWaitTime": "अनुमानित प्रतीक्षा समय",
+    "queueCapacity": "क्यू क्षमता",
+    "location": "स्थान"
+  }

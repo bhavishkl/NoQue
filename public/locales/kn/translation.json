@@ -1,0 +1,12 @@
+{
+  "home": "ಮುಖಪುಟ",
+  "queues": "ಸರದಿಗಳು",
+  "profile": "ಪ್ರೊಫೈಲ್",
+  "logout": "ಲಾಗ್ ಔಟ್",
+  "search": "ಹುಡುಕು",
+  "joinQueue": "ಸರದಿ ಸೇರಿ",
+  "leaveQueue": "ಸರದಿ ಬಿಡಿ",
+  "estimatedWaitTime": "ಅಂದಾಜು ಕಾಯುವ ಸಮಯ",
+  "queueCapacity": "ಸರದಿ ಸಾಮರ್ಥ್ಯ",
+  "location": "ಸ್ಥಳ"
+}

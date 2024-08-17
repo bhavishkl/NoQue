@@ -5,12 +5,14 @@ import { FiMenu, FiBell, FiHome, FiList, FiBarChart2, FiUser, FiSettings, FiLogO
 import { useSupabaseClient } from '@supabase/auth-helpers-react'
 import { toast } from 'react-toastify'
 import { useAuth } from '../hooks/useAuth'
+import { useTranslation } from 'react-i18next';
 
 const Header = () => {
   const router = useRouter()
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const { session, isLoading, logout } = useAuth()
   const supabase = useSupabaseClient()
+  const { t } = useTranslation();
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
@@ -20,23 +22,23 @@ const Header = () => {
     try {
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
-      toast.success('Logged out successfully');
+      toast.success(t('logoutSuccess'));
       router.push('/').then(() => {
         window.location.reload();
       });
     } catch (error) {
       console.error('Error logging out:', error.message);
-      toast.error('Failed to log out. Please try again.');
+      toast.error(t('logoutError'));
     }
   };
 
   const navItems = [
-    { href: '/user/home', icon: FiHome, label: 'Home' },
-    { href: '/user/queues', icon: FiList, label: 'Queues' },
-    { href: '/queue/create-queue', icon: FiPlusCircle, label: 'Create Queue' },
-    { href: '/user/profile', icon: FiUser, label: 'Profile' },
-    { href: '/settings', icon: FiSettings, label: 'Settings' },
-    { href: '/queue/queue-dashboard', icon: FiBarChart2, label: 'Queue Dashboard' },
+    { href: '/user/home', icon: FiHome, label: 'home' },
+    { href: '/user/queues', icon: FiList, label: 'queues' },
+    { href: '/queue/create-queue', icon: FiPlusCircle, label: 'createQueue' },
+    { href: '/user/profile', icon: FiUser, label: 'profile' },
+    { href: '/user/settings', icon: FiSettings, label: 'settings' },
+    { href: '/queue/queue-dashboard', icon: FiBarChart2, label: 'queueDashboard' },
   ];
 
   useEffect(() => {
@@ -72,7 +74,7 @@ const Header = () => {
                   {navItems.map((item) => (
                     <Link key={item.href} href={item.href}>
                       <span className={`flex items-center px-3 py-2 text-sm ${router.pathname === item.href ? 'bg-[#6f6cd3] text-[#ffffff]' : 'text-[#292680] hover:bg-[#6f6cd3] hover:text-[#ffffff]'} cursor-pointer rounded`}>
-                        <item.icon className="mr-2" /> {item.label}
+                        <item.icon className="mr-2" /> {t(item.label)}
                       </span>
                     </Link>
                   ))}
@@ -104,7 +106,7 @@ const Header = () => {
                 {navItems.map((item) => (
                   <Link key={item.href} href={item.href}>
                     <span className={`flex items-center px-6 py-3 text-sm ${router.pathname === item.href ? 'bg-[#6f6cd3] text-[#ffffff]' : 'text-[#292680] hover:bg-[#6f6cd3] hover:text-[#ffffff]'} cursor-pointer transition-colors duration-200`}>
-                      <item.icon className="mr-3 text-lg" /> {item.label}
+                      <item.icon className="mr-3 text-lg" /> {t(item.label)}
                     </span>
                   </Link>
                 ))}
@@ -114,7 +116,7 @@ const Header = () => {
                   onClick={handleLogout}
                   className="flex items-center w-full px-6 py-3 text-sm text-[#292680] hover:bg-[#6f6cd3] hover:text-[#ffffff] cursor-pointer rounded transition-colors duration-200"
                 >
-                  <FiLogOut className="mr-3 text-lg" /> Logout
+                  <FiLogOut className="mr-3 text-lg" /> {t('logout')}
                 </button>
               </div>
             </div>

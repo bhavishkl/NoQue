@@ -1,0 +1,12 @@
+{
+    "home": "Home",
+    "queues": "Queues",
+    "profile": "Profile",
+    "logout": "Logout",
+    "search": "Search",
+    "joinQueue": "Join Queue",
+    "leaveQueue": "Leave Queue",
+    "estimatedWaitTime": "Estimated Wait Time",
+    "queueCapacity": "Queue Capacity",
+    "location": "Location"
+  }

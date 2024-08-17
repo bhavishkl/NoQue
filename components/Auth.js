@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useSupabaseClient } from '@supabase/auth-helpers-react'
 import { useRouter } from 'next/router'
+import { FcGoogle } from 'react-icons/fc'
 
 export default function Auth({ type }) {
   const [email, setEmail] = useState('')
@@ -23,6 +24,17 @@ export default function Auth({ type }) {
         if (error) throw error
         router.push('/')
       }
+    } catch (error) {
+      setError(error.message)
+    }
+  }
+
+  const handleGoogleSignIn = async () => {
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+      })
+      if (error) throw error
     } catch (error) {
       setError(error.message)
     }
@@ -56,6 +68,15 @@ export default function Auth({ type }) {
             {type === 'signup' ? 'Sign Up' : 'Sign In'}
           </button>
         </form>
+        <div className="mt-4">
+          <button
+            onClick={handleGoogleSignIn}
+            className="w-full px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 flex items-center justify-center"
+          >
+            <FcGoogle className="mr-2" />
+            Sign in with Google
+          </button>
+        </div>
       </div>
     </div>
   )

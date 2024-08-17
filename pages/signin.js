@@ -2,9 +2,11 @@ import { useState } from 'react'
 import { useRouter } from 'next/router'
 import Link from 'next/link'
 import { FiEye, FiEyeOff, FiMail, FiLock } from 'react-icons/fi'
+import { FcGoogle } from 'react-icons/fc'
 import { toast } from 'react-toastify'
 import { useDispatch, useSelector } from 'react-redux'
 import { signIn } from '../redux/slices/authSlice'
+import { useSupabaseClient } from '@supabase/auth-helpers-react'
 
 export default function SignInForm() {
   const [email, setEmail] = useState('')
@@ -13,6 +15,7 @@ export default function SignInForm() {
   const router = useRouter()
   const dispatch = useDispatch()
   const { loading, error } = useSelector((state) => state.auth)
+  const supabase = useSupabaseClient()
 
   const handleSignIn = async (e) => {
     e.preventDefault()
@@ -22,6 +25,17 @@ export default function SignInForm() {
       router.push('/user/home')
     } else {
       toast.error(result.payload || 'Failed to sign in')
+    }
+  }
+
+  const handleGoogleSignIn = async () => {
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+      })
+      if (error) throw error
+    } catch (error) {
+      toast.error(error.message || 'Failed to sign in with Google')
     }
   }
 
@@ -109,6 +123,28 @@ export default function SignInForm() {
               </button>
             </div>
           </form>
+  
+          <div className="mt-6">
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-300"></div>
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-2 bg-white text-gray-500">
+                  Or continue with
+                </span>
+              </div>
+            </div>
+            <div className="mt-6">
+              <button
+                onClick={handleGoogleSignIn}
+                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              >
+                <FcGoogle className="h-5 w-5 mr-2" />
+                Sign in with Google
+              </button>
+            </div>
+          </div>
   
           <div className="mt-6">
             <div className="relative">
