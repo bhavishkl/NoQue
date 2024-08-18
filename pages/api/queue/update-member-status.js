@@ -17,35 +17,40 @@ export default async function handler(req, res) {
     }
 
     try {
-      // Update the member status
-      const { error: updateError } = await supabase
+      // Fetch the most recent queue member entry
+      const { data: memberData, error: memberError } = await supabase
         .from('queue_members')
-        .update({ status })
-        .eq('id', memberId)
+        .select('*')
+        .eq('queue_id', queueId)
+        .eq('user_id', session.user.id)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single()
 
-      if (updateError) throw updateError
+      if (memberError) throw memberError
 
-      // Store the history
-      await storeHistory(req, res, { memberId, queueId, status })
+      if (!memberData) {
+        return res.status(404).json({ error: 'Member not found in the queue' })
+      }
 
       // Remove the member from the queue
       const { error: deleteError } = await supabase
         .from('queue_members')
         .delete()
-        .eq('id', memberId)
+        .eq('id', memberData.id)
 
       if (deleteError) throw deleteError
 
-      // Update queue statistics
-      const { data: updatedQueue, error: updateQueueError } = await supabase
+      // Update queue information
+      const { data: updatedQueue, error: queueError } = await supabase
         .from('queues')
         .select('member_count, estimated_service_time')
         .eq('id', queueId)
         .single()
 
-      if (updateQueueError) throw updateQueueError
+      if (queueError) throw queueError
 
-      const newMemberCount = updatedQueue.member_count - 1
+      const newMemberCount = Math.max(0, updatedQueue.member_count - 1)
       const newEstimatedWaitTime = newMemberCount > 0 ? newMemberCount * updatedQueue.estimated_service_time : 0
 
       const { error: finalUpdateError } = await supabase
@@ -65,6 +70,8 @@ export default async function handler(req, res) {
         .eq('queue_id', queueId)
         .eq('user_id', session.user.id)
         .is('served_at', null)
+        .order('joined_at', { ascending: false })
+        .limit(1)
         .single()
 
       if (joinedError) throw joinedError
@@ -84,6 +91,8 @@ export default async function handler(req, res) {
         .eq('queue_id', queueId)
         .eq('user_id', session.user.id)
         .is('served_at', null)
+        .order('joined_at', { ascending: false })
+        .limit(1)
 
       if (historyError) throw historyError
 

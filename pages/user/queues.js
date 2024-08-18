@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useEffect } from 'react'
 import Layout from '../../components/layout'
 import { useRouter } from 'next/router'
-import { FiClock, FiMapPin, FiUsers, FiSearch, FiFilter, FiChevronLeft, FiChevronRight } from 'react-icons/fi'
+import { FiClock, FiMapPin, FiUsers, FiSearch, FiChevronLeft, FiChevronRight } from 'react-icons/fi'
 import { FaStar } from 'react-icons/fa'
 import { toast } from 'react-toastify'
 import Link from 'next/link'
@@ -102,14 +102,13 @@ const Pagination = ({ currentPage, totalPages, onPageChange }) => {
 export default function Queues() {
   const { isLoading: authLoading, isAuthenticated } = useAuth(true)
   const [searchQuery, setSearchQuery] = useState('')
-  const [sortBy, setSortBy] = useState('name')
   const [currentPage, setCurrentPage] = useState(1)
   const [queuesPerPage] = useState(9)
   const router = useRouter()
   const { search } = router.query
   const { data, isLoading: queuesLoading, isError, mutate } = useApi(
     isAuthenticated
-      ? `/api/user/queues?page=${currentPage}&limit=${queuesPerPage}&sortBy=${sortBy}${search ? `&search=${search}` : ''}`
+      ? `/api/user/queues?page=${currentPage}&limit=${queuesPerPage}${search ? `&search=${search}` : ''}`
       : null
   )
 
@@ -118,16 +117,11 @@ export default function Queues() {
     setCurrentPage(1)
   }, [])
 
-  const handleSortChange = useCallback((e) => {
-    setSortBy(e.target.value)
-    setCurrentPage(1)
-  }, [])
-
   const handlePageChange = useCallback((pageNumber) => {
     setCurrentPage(pageNumber)
   }, [])
 
-  const filteredAndSortedQueues = data?.queues || []
+  const filteredQueues = data?.queues || []
   const totalPages = Math.ceil(data?.total / queuesPerPage) || 0
 
   useEffect(() => {
@@ -138,7 +132,7 @@ export default function Queues() {
 
   useEffect(() => {
     mutate()
-  }, [currentPage, sortBy, search, mutate])
+  }, [currentPage, search, mutate])
 
   if (authLoading || queuesLoading) {
     return (
@@ -167,20 +161,8 @@ export default function Queues() {
             />
             <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
           </div>
-          <div className="relative w-full sm:w-auto">
-            <select
-              value={sortBy}
-              onChange={handleSortChange}
-              className="w-full sm:w-auto appearance-none bg-white border border-gray-300 rounded-md py-2 pl-3 pr-10 focus:outline-none focus:ring-2 focus:ring-[#6f6cd3]"
-            >
-              <option value="name">Sort by Name</option>
-              <option value="rating">Sort by Rating</option>
-              <option value="wait_time">Sort by Wait Time</option>
-            </select>
-            <FiFilter className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none" />
-          </div>
         </div>
-        {filteredAndSortedQueues.length === 0 ? (
+        {filteredQueues.length === 0 ? (
           <div className="text-center py-8 sm:py-12">
             <p className="text-lg sm:text-xl text-gray-600 mb-2 sm:mb-4">No queues found.</p>
             <p className="text-sm sm:text-base text-gray-500">Try adjusting your search or check back later for new queues.</p>
@@ -188,7 +170,7 @@ export default function Queues() {
         ) : (
           <>
             <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-              {filteredAndSortedQueues.map((queue) => (
+              {filteredQueues.map((queue) => (
                 <QueueItem key={queue.id} queue={queue} />
               ))}
             </div>
