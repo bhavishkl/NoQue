@@ -57,6 +57,7 @@ export const fetchOwnerQueues = createAsyncThunk(
       }
     }
   )
+
 export const deleteQueue = createAsyncThunk(
   'queue/deleteQueue',
   async (queueId, { rejectWithValue }) => {
@@ -113,6 +114,40 @@ export const updateMemberStatus = createAsyncThunk(
       })
       if (!response.ok) throw new Error('Failed to update member status')
       return await response.json()
+    } catch (error) {
+      return rejectWithValue(error.message)
+    }
+  }
+)
+
+export const joinQueue = createAsyncThunk(
+  'queue/joinQueue',
+  async (queueId, { rejectWithValue }) => {
+    try {
+      const response = await fetch('/api/queue/join', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ queueId }),
+      })
+      if (!response.ok) throw new Error('Failed to join queue')
+      return await response.json()
+    } catch (error) {
+      return rejectWithValue(error.message)
+    }
+  }
+)
+
+export const leaveQueue = createAsyncThunk(
+  'queue/leaveQueue',
+  async (queueId, { rejectWithValue }) => {
+    try {
+      const response = await fetch('/api/queue/leave', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ queueId }),
+      })
+      if (!response.ok) throw new Error('Failed to leave queue')
+      return queueId
     } catch (error) {
       return rejectWithValue(error.message)
     }
@@ -214,6 +249,40 @@ const queueSlice = createSlice({
         state.loading = false
       })
       .addCase(fetchOwnerQueues.rejected, (state, action) => {
+        state.loading = false
+        state.error = action.payload
+      })
+      .addCase(deleteQueue.pending, (state) => {
+        state.loading = true
+        state.error = null
+      })
+      .addCase(deleteQueue.fulfilled, (state, action) => {
+        state.queues = state.queues.filter(queue => queue.id !== action.payload)
+        state.loading = false
+      })
+      .addCase(deleteQueue.rejected, (state, action) => {
+        state.loading = false
+        state.error = action.payload
+      })
+      .addCase(joinQueue.pending, (state) => {
+        state.loading = true
+      })
+      .addCase(joinQueue.fulfilled, (state, action) => {
+        state.loading = false
+        state.currentQueue = { ...state.currentQueue, isJoined: true }
+      })
+      .addCase(joinQueue.rejected, (state, action) => {
+        state.loading = false
+        state.error = action.payload
+      })
+      .addCase(leaveQueue.pending, (state) => {
+        state.loading = true
+      })
+      .addCase(leaveQueue.fulfilled, (state, action) => {
+        state.loading = false
+        state.currentQueue = { ...state.currentQueue, isJoined: false }
+      })
+      .addCase(leaveQueue.rejected, (state, action) => {
         state.loading = false
         state.error = action.payload
       })

@@ -7,7 +7,7 @@ import { useState } from 'react'
 import Header from '../components/header'
 import { Provider } from 'react-redux'
 import { store } from '../redux/store'
-import ErrorBoundary from '../components/ErrorBoundary'
+import ErrorBoundary from '../components/ErrorHandlers/ErrorBoundary'
 import '../i18n';
 
 function MyApp({ Component, pageProps }) {

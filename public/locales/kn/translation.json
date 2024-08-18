@@ -8,5 +8,8 @@
   "leaveQueue": "ಸರದಿ ಬಿಡಿ",
   "estimatedWaitTime": "ಅಂದಾಜು ಕಾಯುವ ಸಮಯ",
   "queueCapacity": "ಸರದಿ ಸಾಮರ್ಥ್ಯ",
-  "location": "ಸ್ಥಳ"
+  "location": "ಸ್ಥಳ",
+  "queueDashboard": "ಸರದಿ ಡ್ಯಾಶ್‌ಬೋರ್ಡ್",
+  "createQueue": "ಸರದಿ ರಚಿಸಿ",
+  "settings": "ಸೆಟ್ಟಿಂಗ್‌ಗಳು"
 }

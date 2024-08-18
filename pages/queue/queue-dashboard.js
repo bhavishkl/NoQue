@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { useRouter } from 'next/router'
 import Layout from '../../components/layout'
 import Link from 'next/link'
 import { FiEdit, FiBarChart2, FiTrash2, FiAlertCircle, FiPlus, FiUsers, FiClock } from 'react-icons/fi'
