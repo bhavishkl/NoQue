@@ -154,6 +154,36 @@ export const leaveQueue = createAsyncThunk(
   }
 )
 
+export const pauseQueue = createAsyncThunk(
+  'queue/pauseQueue',
+  async (queueId, { rejectWithValue }) => {
+    try {
+      const response = await fetch(`/api/queue/pause?queueId=${queueId}`, {
+        method: 'PUT',
+      })
+      if (!response.ok) throw new Error('Failed to pause queue')
+      return await response.json()
+    } catch (error) {
+      return rejectWithValue(error.message)
+    }
+  }
+)
+
+export const resumeQueue = createAsyncThunk(
+  'queue/resumeQueue',
+  async (queueId, { rejectWithValue }) => {
+    try {
+      const response = await fetch(`/api/queue/resume?queueId=${queueId}`, {
+        method: 'PUT',
+      })
+      if (!response.ok) throw new Error('Failed to resume queue')
+      return await response.json()
+    } catch (error) {
+      return rejectWithValue(error.message)
+    }
+  }
+)
+
 const queueSlice = createSlice({
   name: 'queue',
   initialState: {
@@ -283,6 +313,28 @@ const queueSlice = createSlice({
         state.currentQueue = { ...state.currentQueue, isJoined: false }
       })
       .addCase(leaveQueue.rejected, (state, action) => {
+        state.loading = false
+        state.error = action.payload
+      })
+      .addCase(pauseQueue.pending, (state) => {
+        state.loading = true
+      })
+      .addCase(pauseQueue.fulfilled, (state, action) => {
+        state.loading = false
+        state.currentQueue = { ...state.currentQueue, is_paused: true }
+      })
+      .addCase(pauseQueue.rejected, (state, action) => {
+        state.loading = false
+        state.error = action.payload
+      })
+      .addCase(resumeQueue.pending, (state) => {
+        state.loading = true
+      })
+      .addCase(resumeQueue.fulfilled, (state, action) => {
+        state.loading = false
+        state.currentQueue = { ...state.currentQueue, is_paused: false }
+      })
+      .addCase(resumeQueue.rejected, (state, action) => {
         state.loading = false
         state.error = action.payload
       })

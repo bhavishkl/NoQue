@@ -3,16 +3,20 @@ import { useRouter } from 'next/router'
 import { useSession, useSupabaseClient } from '@supabase/auth-helpers-react'
 import Layout from '../../../components/layout'
 import { toast } from 'react-toastify'
-import { FiCheck, FiX } from 'react-icons/fi'
+import { FiCheck, FiX, FiPause, FiPlay } from 'react-icons/fi'
 import ManageQueueSkeleton from '../../../components/skeletons/ManageQueueSkeleton';
+import { useDispatch } from 'react-redux'
+import { pauseQueue, resumeQueue } from '../../../redux/slices/queueSlice'
 
 export default function ManageQueue() {
   const [queue, setQueue] = useState(null)
   const [members, setMembers] = useState([])
   const [loading, setLoading] = useState(true)
+  const [isPauseResumeLoading, setIsPauseResumeLoading] = useState(false)
   const session = useSession()
   const router = useRouter()
   const { id } = router.query
+  const [isPaused, setIsPaused] = useState(false)
   const supabase = useSupabaseClient()
 
   useEffect(() => {
@@ -44,17 +48,17 @@ export default function ManageQueue() {
       }
     }
   }, [id, session, supabase])
-
   async function fetchQueueDetails() {
     try {
       const { data, error } = await supabase
         .from('queues')
-        .select('*')
+        .select('*, is_paused')
         .eq('id', id)
         .single()
 
       if (error) throw error
       setQueue(data)
+      setIsPaused(data.is_paused || false)
     } catch (error) {
       console.error('Error fetching queue details:', error)
       toast.error('Failed to fetch queue details')
@@ -112,6 +116,35 @@ export default function ManageQueue() {
       toast.error('Failed to update member status');
     }
   }
+  const dispatch = useDispatch()
+
+  async function handlePauseQueue() {
+    try {
+      setIsPauseResumeLoading(true)
+      await dispatch(pauseQueue(id)).unwrap()
+      setIsPaused(true)
+      toast.success('Queue paused successfully')
+    } catch (error) {
+      console.error('Error pausing queue:', error)
+      toast.error('Failed to pause queue')
+    } finally {
+      setIsPauseResumeLoading(false)
+    }
+  }
+  
+  async function handleResumeQueue() {
+    try {
+      setIsPauseResumeLoading(true)
+      await dispatch(resumeQueue(id)).unwrap()
+      setIsPaused(false)
+      toast.success('Queue resumed successfully')
+    } catch (error) {
+      console.error('Error resuming queue:', error)
+      toast.error('Failed to resume queue')
+    } finally {
+      setIsPauseResumeLoading(false)
+    }
+  }
   if (!session) {
     return (
       <Layout>
@@ -133,10 +166,44 @@ export default function ManageQueue() {
       <div className="max-w-4xl mx-auto mt-8 px-4">
         <h1 className="text-3xl font-bold mb-6">Manage Queue: {queue?.name}</h1>
         {queue && (
-          <div className="mb-6">
-            <p className="text-lg text-gray-600">
-              Current members: <span className="font-semibold">{members.length}</span>
-            </p>
+          <div className="mb-6 flex justify-between items-center">
+            <div>
+              <p className="text-lg text-gray-600">
+                Current members: <span className="font-semibold">{members.length}</span>
+              </p>
+              <p className="text-sm text-gray-500 mt-1">
+                Status: <span className={`font-semibold ${isPaused ? 'text-red-500' : 'text-green-500'}`}>
+                  {isPaused ? 'Paused' : 'Active'}
+                </span>
+              </p>
+            </div>
+            {isPaused ? (
+              <button
+                onClick={handleResumeQueue}
+                disabled={isPauseResumeLoading}
+                className={`bg-green-500 text-white py-2 px-4 rounded hover:bg-green-600 transition duration-200 flex items-center ${isPauseResumeLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+              >
+                {isPauseResumeLoading ? (
+                  <span className="inline-block animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white mr-2"></span>
+                ) : (
+                  <FiPlay className="mr-2" />
+                )}
+                Resume Queue
+              </button>
+            ) : (
+              <button
+                onClick={handlePauseQueue}
+                disabled={isPauseResumeLoading}
+                className={`bg-yellow-500 text-white py-2 px-4 rounded hover:bg-yellow-600 transition duration-200 flex items-center ${isPauseResumeLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+              >
+                {isPauseResumeLoading ? (
+                  <span className="inline-block animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white mr-2"></span>
+                ) : (
+                  <FiPause className="mr-2" />
+                )}
+                Pause Queue
+              </button>
+            )}
           </div>
         )}
         {loading ? (
