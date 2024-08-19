@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
 import { useDispatch, useSelector } from 'react-redux'
 import Layout from '../../components/layout'
@@ -8,15 +8,45 @@ import { toast } from 'react-toastify'
 import Link from 'next/link'
 import QueueDetailsSkeleton from '../../components/skeletons/QueueDetailsSkeleton'
 import { useAuth } from '../../hooks/useAuth'
-import ReviewList from '../../components/ReviewList'
 import { useSupabaseClient } from '@supabase/auth-helpers-react'
 import { fetchQueueDetails, joinQueue, leaveQueue } from '../../redux/slices/queueSlice'
 import dynamic from 'next/dynamic'
 import QueueErrorBoundary from '../../components/ErrorHandlers/QueueErrorBoundary'
+import { formatDistanceToNow, parseISO } from 'date-fns'
 
 const ReviewForm = dynamic(() => import('../../components/ReviewForm'), {
   loading: () => <p className="text-center text-gray-500">Loading review form...</p>,
 })
+
+const DynamicReviewList = dynamic(() => import('../../components/ReviewList'), {
+  loading: () => <p className="text-center text-gray-500">Loading reviews...</p>,
+  ssr: false
+})
+
+const Countdown = ({ expectedAt }) => {
+  const [timeLeft, setTimeLeft] = useState('')
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      const now = new Date()
+      const expected = parseISO(expectedAt)
+      if (now >= expected) {
+        setTimeLeft('Time expired')
+        clearInterval(timer)
+      } else {
+        const diff = expected.getTime() - now.getTime()
+        const hours = Math.floor(diff / (1000 * 60 * 60))
+        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
+        const seconds = Math.floor((diff % (1000 * 60)) / 1000)
+        setTimeLeft(`${hours}h ${minutes}m ${seconds}s`)
+      }
+    }, 1000)
+
+    return () => clearInterval(timer)
+  }, [expectedAt])
+
+  return <span>{timeLeft}</span>
+}
 
 export default function QueueDetails() {
   const { isLoading: authLoading, isAuthenticated } = useAuth(true)
@@ -145,6 +175,12 @@ export default function QueueDetails() {
                 <div className="bg-blue-100 p-4">
                   <p className="font-bold text-blue-800">Your position in queue: <strong>{queue.userPosition}</strong></p>
                   <p className="text-blue-700">Estimated wait time: <strong>{queue.userEstimatedWaitTime} minutes</strong></p>
+                  {queue.expectedAt && (
+                    <>
+                      <p className="text-blue-700">Expected service time: <strong>{new Date(queue.expectedAt).toLocaleString()}</strong></p>
+                      <p className="text-blue-700">Time until service: <strong><Countdown expectedAt={queue.expectedAt} /></strong></p>
+                    </>
+                  )}
                 </div>
               ) : (
                 <div className="bg-yellow-100 p-4">
@@ -191,7 +227,7 @@ export default function QueueDetails() {
                 <ReviewForm queueId={queue.id} onReviewSubmitted={() => dispatch(fetchQueueDetails(queue.id))} />
               </div>
               <div className="border-t border-gray-200">
-                <ReviewList queueId={queue.id} />
+                <DynamicReviewList queueId={queue.id} />
               </div>
             </div>
           </div>

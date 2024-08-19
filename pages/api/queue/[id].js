@@ -46,25 +46,26 @@ if (queueError) throw queueError
       queueData.estimatedWaitTime = newEstimatedWaitTime
       // Check if the user is in the queue and calculate their position
       const { data: userPosition, error: positionError } = await supabase
-        .from('queue_members')
-        .select('*')
-        .eq('queue_id', id)
-        .eq('user_id', session.user.id)
-        .order('created_at', { ascending: true })
+  .from('queue_members')
+  .select('*, expected_at')
+  .eq('queue_id', id)
+  .eq('user_id', session.user.id)
+  .order('created_at', { ascending: true })
 
-        if (!positionError && userPosition.length > 0) {
-          const { count: position } = await supabase
-            .from('queue_members')
-            .select('*', { count: 'exact' })
-            .eq('queue_id', id)
-            .lte('created_at', userPosition[0].created_at)
-        
-          queueData.userPosition = position
-          queueData.userEstimatedWaitTime = position > 1 ? (position - 1) * queueData.estimated_service_time : 0
-          queueData.isJoined = true
-        } else {
-          queueData.isJoined = false
-        }
+  if (!positionError && userPosition.length > 0) {
+    const { count: position } = await supabase
+      .from('queue_members')
+      .select('*', { count: 'exact' })
+      .eq('queue_id', id)
+      .lte('created_at', userPosition[0].created_at)
+  
+    queueData.userPosition = position
+    queueData.userEstimatedWaitTime = position > 1 ? (position - 1) * queueData.estimated_service_time : 0
+    queueData.isJoined = true
+    queueData.expectedAt = userPosition[0].expected_at
+  } else {
+    queueData.isJoined = false
+  }
 
       return res.status(200).json(queueData)
     } catch (error) {
