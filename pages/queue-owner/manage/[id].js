@@ -3,7 +3,7 @@ import { useRouter } from 'next/router'
 import { useSession, useSupabaseClient } from '@supabase/auth-helpers-react'
 import Layout from '../../../components/layout'
 import { toast } from 'react-toastify'
-import { FiCheck, FiX, FiPause, FiPlay } from 'react-icons/fi'
+import { FiCheck, FiX, FiPause, FiPlay, FiClock } from 'react-icons/fi'
 import ManageQueueSkeleton from '../../../components/skeletons/ManageQueueSkeleton';
 import { useDispatch } from 'react-redux'
 import { pauseQueue, resumeQueue } from '../../../redux/slices/queueSlice'
@@ -13,11 +13,13 @@ export default function ManageQueue() {
   const [members, setMembers] = useState([])
   const [loading, setLoading] = useState(true)
   const [isPauseResumeLoading, setIsPauseResumeLoading] = useState(false)
+  const [serviceStartTime, setServiceStartTime] = useState('')
   const session = useSession()
   const router = useRouter()
   const { id } = router.query
   const [isPaused, setIsPaused] = useState(false)
   const supabase = useSupabaseClient()
+  const dispatch = useDispatch()
 
   useEffect(() => {
     if (id && session) {
@@ -48,17 +50,19 @@ export default function ManageQueue() {
       }
     }
   }, [id, session, supabase])
+
   async function fetchQueueDetails() {
     try {
       const { data, error } = await supabase
         .from('queues')
-        .select('*, is_paused')
+        .select('*, is_paused, service_start_time')
         .eq('id', id)
         .single()
 
       if (error) throw error
       setQueue(data)
       setIsPaused(data.is_paused || false)
+      setServiceStartTime(data.service_start_time || '')
     } catch (error) {
       console.error('Error fetching queue details:', error)
       toast.error('Failed to fetch queue details')
@@ -116,7 +120,6 @@ export default function ManageQueue() {
       toast.error('Failed to update member status');
     }
   }
-  const dispatch = useDispatch()
 
   async function handlePauseQueue() {
     try {
@@ -145,6 +148,28 @@ export default function ManageQueue() {
       setIsPauseResumeLoading(false)
     }
   }
+
+  async function handleServiceStartTimeChange(e) {
+    const newStartTime = e.target.value
+    setServiceStartTime(newStartTime)
+    try {
+      const response = await fetch(`/api/queue/update-service-start-time`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ queueId: id, serviceStartTime: newStartTime }),
+      })
+      if (!response.ok) {
+        throw new Error('Failed to update service start time')
+      }
+      toast.success('Service start time updated successfully')
+    } catch (error) {
+      console.error('Error updating service start time:', error)
+      toast.error('Failed to update service start time')
+    }
+  }
+
   if (!session) {
     return (
       <Layout>
@@ -206,6 +231,24 @@ export default function ManageQueue() {
             )}
           </div>
         )}
+        <div className="mb-6">
+          <label htmlFor="serviceStartTime" className="block text-sm font-medium text-gray-700">
+            Service Start Time
+          </label>
+          <div className="mt-1 relative rounded-md shadow-sm">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <FiClock className="h-5 w-5 text-gray-400" />
+            </div>
+            <input
+              type="time"
+              id="serviceStartTime"
+              name="serviceStartTime"
+              value={serviceStartTime}
+              onChange={handleServiceStartTimeChange}
+              className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            />
+          </div>
+        </div>
         {loading ? (
           <div className="text-center py-8">
             <div className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
