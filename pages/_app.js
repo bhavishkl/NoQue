@@ -8,21 +8,23 @@ import Header from '../components/header'
 import { Provider } from 'react-redux'
 import { store } from '../redux/store'
 import ErrorBoundary from '../components/ErrorHandlers/ErrorBoundary'
-import '../i18n';
+import { ConfigProvider } from 'antd'
 
 function MyApp({ Component, pageProps }) {
   const [supabaseClient] = useState(() => createPagesBrowserClient())
 
   return (
-    <Provider store={store}>
-      <ErrorBoundary>
-        <SessionContextProvider supabaseClient={supabaseClient} initialSession={pageProps.initialSession}>
-          <Header />
-          <Component {...pageProps} />
-          <ToastContainer />
-        </SessionContextProvider>
-      </ErrorBoundary>
-    </Provider>
+    <ConfigProvider>
+      <Provider store={store}>
+        <ErrorBoundary>
+          <SessionContextProvider supabaseClient={supabaseClient} initialSession={pageProps.initialSession}>
+            <Header />
+            <Component {...pageProps} />
+            <ToastContainer />
+          </SessionContextProvider>
+        </ErrorBoundary>
+      </Provider>
+    </ConfigProvider>
   )
 }
 
