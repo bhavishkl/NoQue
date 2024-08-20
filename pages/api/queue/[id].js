@@ -14,9 +14,10 @@ export default async function handler(req, res) {
     try {
       const { data: queueData, error: queueError } = await supabase
   .from('queues')
-  .select('*, categories(id, name), average_rating, queue_uid, is_paused')
+  .select('*, categories(id, name), average_rating, queue_uid, is_paused, service_start_time')
   .eq('id', id)
   .single()
+  
 if (queueError) throw queueError
 
       const { count: memberCount } = await supabase

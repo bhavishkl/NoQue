@@ -7,13 +7,15 @@ import { FiCheck, FiX, FiPause, FiPlay, FiClock } from 'react-icons/fi'
 import ManageQueueSkeleton from '../../../components/skeletons/ManageQueueSkeleton';
 import { useDispatch } from 'react-redux'
 import { pauseQueue, resumeQueue } from '../../../redux/slices/queueSlice'
+import { TimePicker } from 'antd'
+import dayjs from 'dayjs'
 
 export default function ManageQueue() {
   const [queue, setQueue] = useState(null)
   const [members, setMembers] = useState([])
   const [loading, setLoading] = useState(true)
   const [isPauseResumeLoading, setIsPauseResumeLoading] = useState(false)
-  const [serviceStartTime, setServiceStartTime] = useState('')
+  const [serviceStartTime, setServiceStartTime] = useState(null)
   const session = useSession()
   const router = useRouter()
   const { id } = router.query
@@ -62,7 +64,7 @@ export default function ManageQueue() {
       if (error) throw error
       setQueue(data)
       setIsPaused(data.is_paused || false)
-      setServiceStartTime(data.service_start_time || '')
+      setServiceStartTime(data.service_start_time ? dayjs(data.service_start_time, 'HH:mm:ss') : null)
     } catch (error) {
       console.error('Error fetching queue details:', error)
       toast.error('Failed to fetch queue details')
@@ -149,16 +151,16 @@ export default function ManageQueue() {
     }
   }
 
-  async function handleServiceStartTimeChange(e) {
-    const newStartTime = e.target.value
-    setServiceStartTime(newStartTime)
+  async function handleServiceStartTimeChange(time) {
+    const timeString = time ? time.format('HH:mm:ss') : null
+    setServiceStartTime(time)
     try {
       const response = await fetch(`/api/queue/update-service-start-time`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ queueId: id, serviceStartTime: newStartTime }),
+        body: JSON.stringify({ queueId: id, serviceStartTime: timeString }),
       })
       if (!response.ok) {
         throw new Error('Failed to update service start time')
@@ -239,10 +241,9 @@ export default function ManageQueue() {
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <FiClock className="h-5 w-5 text-gray-400" />
             </div>
-            <input
-              type="time"
-              id="serviceStartTime"
-              name="serviceStartTime"
+            <TimePicker
+              use12Hours
+              format="h:mm a"
               value={serviceStartTime}
               onChange={handleServiceStartTimeChange}
               className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"

@@ -13,6 +13,7 @@ import { fetchQueueDetails, joinQueue, leaveQueue } from '../../redux/slices/que
 import dynamic from 'next/dynamic'
 import QueueErrorBoundary from '../../components/ErrorHandlers/QueueErrorBoundary'
 import { formatDistanceToNow, parseISO } from 'date-fns'
+import { format } from 'date-fns'
 
 const ReviewForm = dynamic(() => import('../../components/ReviewForm'), {
   loading: () => <p className="text-center text-gray-500">Loading review form...</p>,
@@ -22,6 +23,18 @@ const DynamicReviewList = dynamic(() => import('../../components/ReviewList'), {
   loading: () => <p className="text-center text-gray-500">Loading reviews...</p>,
   ssr: false
 })
+
+function formatServiceStartTime(timeString) {
+  if (!timeString) return 'Not set';
+  
+  // Assuming the timeString is in HH:mm:ss format
+  const [hours, minutes] = timeString.split(':');
+  const date = new Date();
+  date.setHours(parseInt(hours, 10));
+  date.setMinutes(parseInt(minutes, 10));
+  
+  return format(date, 'h:mm a');
+}
 
 const Countdown = ({ expectedAt }) => {
   const [timeLeft, setTimeLeft] = useState('')
@@ -129,9 +142,9 @@ export default function QueueDetails() {
                   <span><strong>{queue.location}</strong></span>
                 </div>
                 <div className="flex items-center text-gray-700">
-                  <FiClock className="mr-2 text-green-500" />
-                  <span>Est. service time: <strong>{queue.estimated_service_time} min</strong></span>
-                </div>
+  <FiClock className="mr-2 text-green-500" />
+  <span>Service start time: <strong>{queue.service_start_time ? formatServiceStartTime(queue.service_start_time) : 'Not set'}</strong></span>
+</div>
                 <div className="flex items-center text-gray-700">
                   <FiUsers className="mr-2 text-purple-500" />
                   <span>Capacity: <strong>{queue.max_capacity}</strong></span>
