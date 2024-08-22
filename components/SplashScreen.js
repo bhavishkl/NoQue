@@ -7,7 +7,7 @@ const LetterN = () => (
     initial={{ pathLength: 0 }}
     animate={{ pathLength: 1 }}
     transition={{ duration: 1.5, ease: "easeInOut" }}
-    stroke="#fff"
+    stroke="#4338ca"
     strokeWidth="5"
     fill="none"
   />
@@ -19,7 +19,7 @@ const LetterO = () => (
     initial={{ pathLength: 0 }}
     animate={{ pathLength: 1 }}
     transition={{ duration: 1.5, ease: "easeInOut" }}
-    stroke="#fff"
+    stroke="#4338ca"
     strokeWidth="10"
     fill="none"
   />
@@ -31,7 +31,7 @@ const LetterQ = () => (
     initial={{ pathLength: 0 }}
     animate={{ pathLength: 1 }}
     transition={{ duration: 1.5, ease: "easeInOut" }}
-    stroke="#fff"
+    stroke="#4338ca"
     strokeWidth="10"
     fill="none"
   />
@@ -43,7 +43,7 @@ const LetterU = () => (
     initial={{ pathLength: 0 }}
     animate={{ pathLength: 1 }}
     transition={{ duration: 1.5, ease: "easeInOut" }}
-    stroke="#fff"
+    stroke="#4338ca"
     strokeWidth="10"
     fill="none"
   />
@@ -55,7 +55,7 @@ const LetterE = () => (
     initial={{ pathLength: 0 }}
     animate={{ pathLength: 1 }}
     transition={{ duration: 1.5, ease: "easeInOut" }}
-    stroke="#fff"
+    stroke="#4338ca"
     strokeWidth="10"
     fill="none"
   />
@@ -73,7 +73,7 @@ export default function SplashScreen() {
   }, []);
 
   return (
-    <div className="flex flex-col items-center justify-center h-screen bg-gradient-to-br from-indigo-900 to-purple-900 text-white">
+    <div className="flex flex-col items-center justify-center h-screen bg-white text-indigo-900">
       <div className="flex mb-8">
         {['N', 'O', 'Q', 'U', 'E'].map((letter, index) => (
           <motion.div
@@ -93,7 +93,7 @@ export default function SplashScreen() {
         ))}
       </div>
       <motion.p
-        className="text-xl md:text-2xl font-light mb-8 text-indigo-200"
+        className="text-xl md:text-2xl font-light mb-8 text-purple-900"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 1.5, duration: 0.5 }}
@@ -106,11 +106,11 @@ export default function SplashScreen() {
         animate={{ opacity: 1 }}
         transition={{ delay: 2, duration: 0.5 }}
       >
-        <div className="w-16 h-16 border-t-4 border-b-4 border-indigo-400 rounded-full animate-spin"></div>
-        <div className="absolute top-0 left-0 w-16 h-16 border-l-4 border-r-4 border-purple-400 rounded-full animate-ping"></div>
+        <div className="w-16 h-16 border-t-4 border-b-4 border-indigo-900 rounded-full animate-spin"></div>
+        <div className="absolute top-0 left-0 w-16 h-16 border-l-4 border-r-4 border-purple-900 rounded-full animate-ping"></div>
       </motion.div>
       <motion.p
-        className="mt-4 text-indigo-200 animate-pulse"
+        className="mt-4 text-purple-900 animate-pulse"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 2.5, duration: 0.5 }}

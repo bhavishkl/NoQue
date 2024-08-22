@@ -54,15 +54,22 @@ export default function QueueDashboard() {
     }
   }, [error])
 
-  const handleDeleteQueue = async (queueId) => {
+  async function handleDeleteQueue(queueId) {
     try {
-      await dispatch(deleteQueue(queueId)).unwrap()
+      const response = await fetch(`/api/queue/delete-queue?queueId=${queueId}`, {
+        method: 'DELETE',
+      })
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to delete queue')
+      }
+      dispatch(deleteQueue(queueId))
       toast.success('Queue deleted successfully')
-    } catch (error) {
-      toast.error('Failed to delete queue. Please try again.')
-    } finally {
       setShowModal(false)
       setQueueToDelete(null)
+    } catch (error) {
+      console.error('Error deleting queue:', error)
+      toast.error('Failed to delete queue. Please try again.')
     }
   }
 
