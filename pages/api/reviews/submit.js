@@ -15,15 +15,16 @@ export default async function handler(req, res) {
     try {
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
-        .select('id')
+        .select('id, name')
         .eq('id', session.user.id)
         .single()
-
+    
       if (profileError) throw profileError
 
       // Start a transaction
       const { data, error } = await supabase.rpc('submit_review_and_update_average', {
         p_user_id: profileData.id,
+        p_user_name: profileData.name,
         p_queue_id: queueId,
         p_rating: rating,
         p_comment: comment

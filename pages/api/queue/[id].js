@@ -47,27 +47,39 @@ if (queueError) throw queueError
       queueData.estimatedWaitTime = newEstimatedWaitTime
       // Check if the user is in the queue and calculate their position
       const { data: userPosition, error: positionError } = await supabase
-  .from('queue_members')
-  .select('*, expected_at')
-  .eq('queue_id', id)
-  .eq('user_id', session.user.id)
-  .order('created_at', { ascending: true })
-
-  if (!positionError && userPosition.length > 0) {
-    const { count: position } = await supabase
       .from('queue_members')
-      .select('*', { count: 'exact' })
+      .select('*, created_at, expected_at')
       .eq('queue_id', id)
-      .lte('created_at', userPosition[0].created_at)
-  
-    queueData.userPosition = position
-    queueData.userEstimatedWaitTime = position > 1 ? (position - 1) * queueData.estimated_service_time : 0
-    queueData.isJoined = true
-    queueData.expectedAt = userPosition[0].expected_at
-  } else {
-    queueData.isJoined = false
-  }
-
+      .eq('user_id', session.user.id)
+      .single()
+    
+    if (!positionError && userPosition) {
+      const { count: position, data: previousMember } = await supabase
+        .from('queue_members')
+        .select('*', { count: 'exact' })
+        .eq('queue_id', id)
+        .lte('created_at', userPosition.created_at)
+        .order('created_at', { ascending: false })
+        .limit(2)
+    
+      queueData.userPosition = position
+      queueData.userEstimatedWaitTime = position > 1 ? (position - 1) * queueData.estimated_service_time : 0
+      queueData.isJoined = true
+      queueData.expectedAt = userPosition.expected_at
+    
+      // Convert previous user's join time to IST
+      const prevUserJoinTime = previousMember.length > 1 ? new Date(previousMember[1].created_at) : null
+      queueData.previousMemberJoinTimeIST = prevUserJoinTime ? prevUserJoinTime.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }) : null
+    
+          // Calculate user's expected time
+          const now = new Date()
+          const serviceStartTime = queueData.service_start_time ? new Date(`${now.toDateString()} ${queueData.service_start_time}`) : now
+          const timeUntilServiceStart = Math.max(0, serviceStartTime - now)
+          const userExpectedTime = new Date(now.getTime() + timeUntilServiceStart + queueData.userEstimatedWaitTime * 60000)
+          queueData.userExpectedTime = userExpectedTime.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' })
+     } else {
+      queueData.isJoined = false
+    }
       return res.status(200).json(queueData)
     } catch (error) {
       console.error('Error fetching queue:', error)

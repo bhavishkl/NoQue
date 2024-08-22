@@ -3,8 +3,8 @@ import { useRouter } from 'next/router'
 import { useDispatch, useSelector } from 'react-redux'
 import Layout from '../../components/layout'
 import { FiClock, FiMapPin, FiUsers, FiRefreshCw, FiAlertCircle, FiTag, FiHash, FiCopy } from 'react-icons/fi'
-import { FaStar } from 'react-icons/fa'
-import { toast } from 'react-toastify'
+import { FaStar, FaUserCircle } from 'react-icons/fa'
+import { message } from 'antd'
 import Link from 'next/link'
 import QueueDetailsSkeleton from '../../components/skeletons/QueueDetailsSkeleton'
 import { useAuth } from '../../hooks/useAuth'
@@ -17,11 +17,6 @@ import { format } from 'date-fns'
 
 const ReviewForm = dynamic(() => import('../../components/ReviewForm'), {
   loading: () => <p className="text-center text-gray-500">Loading review form...</p>,
-})
-
-const DynamicReviewList = dynamic(() => import('../../components/ReviewList'), {
-  loading: () => <p className="text-center text-gray-500">Loading reviews...</p>,
-  ssr: false
 })
 
 function formatServiceStartTime(timeString) {
@@ -42,7 +37,7 @@ const Countdown = ({ expectedAt }) => {
   useEffect(() => {
     const timer = setInterval(() => {
       const now = new Date()
-      const expected = parseISO(expectedAt)
+      const expected = new Date(expectedAt)
       if (now >= expected) {
         setTimeLeft('Time expired')
         clearInterval(timer)
@@ -68,16 +63,21 @@ export default function QueueDetails() {
   const dispatch = useDispatch()
   const { currentQueue: queue, loading: queueLoading, error } = useSelector((state) => state.queue)
   const supabase = useSupabaseClient()
+  const [topReviews, setTopReviews] = useState([])
 
   useEffect(() => {
-    if (isAuthenticated && id) {
-      dispatch(fetchQueueDetails(id))
-    }
-  }, [isAuthenticated, id, dispatch])
+  if (isAuthenticated && id) {
+    dispatch(fetchQueueDetails(id)).then((action) => {
+      if (action.payload && action.payload.top_reviews) {
+        setTopReviews(action.payload.top_reviews)
+      }
+    })
+  }
+}, [isAuthenticated, id, dispatch])
 
   useEffect(() => {
     if (error) {
-      toast.error('Failed to fetch queue details. Please try again.')
+      message.error('Failed to fetch queue details. Please try again.')
     }
   }, [error])
 
@@ -99,18 +99,18 @@ export default function QueueDetails() {
   const handleJoinQueue = async () => {
     try {
       await dispatch(joinQueue(id)).unwrap()
-      toast.success('Successfully joined the queue')
+      message.success('Successfully joined the queue')
     } catch (error) {
-      toast.error('Failed to join queue. Please try again.')
+      message.error('Failed to join queue. Please try again.')
     }
   }
 
   const handleLeaveQueue = async () => {
     try {
       await dispatch(leaveQueue(id)).unwrap()
-      toast.success('Successfully left the queue')
+      message.success('Successfully left the queue')
     } catch (error) {
-      toast.error('Failed to leave queue. Please try again.')
+      message.error('Failed to leave queue. Please try again.')
     }
   }
 
@@ -185,21 +185,21 @@ export default function QueueDetails() {
                 </div>
               </div>
               {queue.userPosition ? (
-                <div className="bg-blue-100 p-4">
-                  <p className="font-bold text-blue-800">Your position in queue: <strong>{queue.userPosition}</strong></p>
-                  <p className="text-blue-700">Estimated wait time: <strong>{queue.userEstimatedWaitTime} minutes</strong></p>
-                  {queue.expectedAt && (
-                    <>
-                      <p className="text-blue-700">Expected service time: <strong>{new Date(queue.expectedAt).toLocaleString()}</strong></p>
-                      <p className="text-blue-700">Time until service: <strong><Countdown expectedAt={queue.expectedAt} /></strong></p>
-                    </>
-                  )}
-                </div>
-              ) : (
-                <div className="bg-yellow-100 p-4">
-                  <p className="text-yellow-800">Estimated wait time: <strong>{queue.estimatedWaitTime} minutes</strong></p>
-                </div>
-              )}
+  <div className="bg-blue-100 p-4">
+    <p className="font-bold text-blue-800">Your position in queue: <strong>{queue.userPosition}</strong></p>
+    <p className="text-blue-700">Estimated wait time: <strong>{queue.userEstimatedWaitTime} minutes</strong></p>
+    {queue.userExpectedTime && (
+      <>
+        <p className="text-blue-700">Expected service time: <strong>{queue.userExpectedTime}</strong></p>
+        <p className="text-blue-700">Time until service: <strong><Countdown expectedAt={queue.userExpectedTime} /></strong></p>
+      </>
+    )}
+  </div>
+) : (
+  <div className="bg-yellow-100 p-4">
+    <p className="text-yellow-800">Estimated wait time: <strong>{queue.estimatedWaitTime} minutes</strong></p>
+  </div>
+)}
               <div className="p-6 flex flex-col sm:flex-row gap-4">
                 {queue.isJoined ? (
                   <button
@@ -237,10 +237,46 @@ export default function QueueDetails() {
             </div>
             <div className="mt-8 bg-white rounded-lg shadow-lg overflow-hidden">
               <div className="p-6">
-                <ReviewForm queueId={queue.id} onReviewSubmitted={() => dispatch(fetchQueueDetails(queue.id))} />
+                <h2 className="text-2xl font-bold mb-4">Reviews</h2>
+                {topReviews.length > 0 ? (
+                  <>
+                    {topReviews.slice(0, 3).map((review, index) => (
+                      <div key={index} className="mb-4 pb-4 border-b border-gray-200 last:border-b-0">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center">
+                            <FaUserCircle className="text-gray-400 text-3xl mr-3" />
+                            <div>
+                              <div className="font-semibold text-lg text-gray-800">
+                                {review.user_name || 'Anonymous User'}
+                              </div>
+                              <div className="text-sm text-gray-500">
+                                {new Date(review.created_at).toLocaleDateString()}
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex items-center">
+                            {[...Array(5)].map((_, i) => (
+                              <FaStar
+                                key={i}
+                                className={i < review.rating ? "text-yellow-400" : "text-gray-300"}
+                                size={20}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                        <p className="text-gray-600 mt-2">{review.comment}</p>
+                      </div>
+                    ))}
+                    <Link href={`/queue/reviews/${id}`} className="text-blue-500 hover:text-blue-600 font-semibold">
+                      View All Reviews
+                    </Link>
+                  </>
+                ) : (
+                  <p className="text-gray-500">No reviews yet.</p>
+                )}
               </div>
-              <div className="border-t border-gray-200">
-                <DynamicReviewList queueId={queue.id} />
+              <div className="border-t border-gray-200 p-6">
+                <ReviewForm queueId={queue.id} onReviewSubmitted={() => dispatch(fetchQueueDetails(id))} />
               </div>
             </div>
           </div>
