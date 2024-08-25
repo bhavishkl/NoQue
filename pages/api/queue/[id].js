@@ -79,7 +79,7 @@ const serviceStartTime = queueData.service_start_time
   : now
 const timeUntilServiceStart = Math.max(0, serviceStartTime.getTime() - now.getTime())
 const userExpectedTime = new Date(now.getTime() + timeUntilServiceStart + queueData.userEstimatedWaitTime * 60000)
-queueData.userExpectedTime = userExpectedTime.toISOString()
+queueData.userExpectedTime = new Date(userExpectedTime.getTime() + 5.5 * 60 * 60 * 1000).toISOString()
       } else {
         queueData.isJoined = false
       }
