@@ -182,7 +182,19 @@ export default function QueueDetails() {
                   <p className="text-gray-600 mb-4">{queue.description}</p>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <QueueInfoItem icon={FiMapPin} label="Location" value={queue.location} />
-                    <QueueInfoItem icon={FiClock} label="Service start time" value={queue.service_start_time ? formatServiceStartTime(queue.service_start_time) : 'Not set'} />
+                    <QueueInfoItem
+                      icon={FiClock}
+                      label="Service start time"
+                      value={queue.service_start_time
+                        ? new Date(`${new Date().toDateString()} ${queue.service_start_time}`).toLocaleTimeString('en-IN', {
+                            timeZone: 'Asia/Kolkata',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            hour12: true
+                          })
+                        : 'Not set'
+                      }
+                    />
                     <QueueInfoItem icon={FiUsers} label="Capacity" value={queue.max_capacity} />
                     <QueueInfoItem icon={FiUsers} label="Current members" value={queue.memberCount} />
                     <QueueInfoItem icon={FaStar} label="Rating" value={`${queue.average_rating ? queue.average_rating.toFixed(1) : 'N/A'} (${queue.reviewCount || 0} reviews)`} />
