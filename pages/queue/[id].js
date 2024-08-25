@@ -28,18 +28,18 @@ function formatServiceStartTime(timeString) {
   // Assuming the timeString is in HH:mm:ss format
   const [hours, minutes] = timeString.split(':');
   
-  // Create a date object for today in IST
-  const now = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }));
-  now.setHours(parseInt(hours, 10), parseInt(minutes, 10), 0, 0);
+  // Create a date object for today in UTC
+  const now = new Date();
+  const utcTime = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), parseInt(hours, 10), parseInt(minutes, 10)));
   
-  // Format the time in IST
-  return now.toLocaleTimeString('en-US', { 
+  // Format the time in the user's local time zone
+  return utcTime.toLocaleTimeString([], { 
     hour: 'numeric', 
     minute: 'numeric', 
-    hour12: true, 
-    timeZone: 'Asia/Kolkata' 
+    hour12: true
   });
 }
+
 const Countdown = ({ expectedAt }) => {
   const [timeLeft, setTimeLeft] = useState('')
 
