@@ -17,32 +17,25 @@ import PaymentButton from '../../components/PaymentButton'
 import Lottie from 'lottie-react';
 import successAnimation from '../../public/animations/success-animation.json';
 import { motion } from 'framer-motion';
-
 const ReviewForm = dynamic(() => import('../../components/ReviewForm'), {
   loading: () => <p className="text-center text-gray-500">Loading review form...</p>,
 })
-
 function formatServiceStartTime(timeString) {
   if (!timeString) return 'Not set';
   
   // Assuming the timeString is in HH:mm:ss format
   const [hours, minutes] = timeString.split(':');
-  
-  // Create a date object for today in UTC
-  const now = new Date();
-  const utcTime = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), parseInt(hours, 10), parseInt(minutes, 10)));
-  
-  // Format the time in the user's local time zone
-  return utcTime.toLocaleTimeString([], { 
-    hour: 'numeric', 
-    minute: 'numeric', 
-    hour12: true
-  });
+  const date = new Date();
+  date.setHours(parseInt(hours, 10));
+  date.setMinutes(parseInt(minutes, 10));
+
+  return format(date, 'h:mm a');
 }
 
 const Countdown = ({ expectedAt }) => {
   const [timeLeft, setTimeLeft] = useState('')
-
+    
+  
   useEffect(() => {
     const timer = setInterval(() => {
       const now = new Date()
@@ -58,13 +51,10 @@ const Countdown = ({ expectedAt }) => {
         setTimeLeft(`${hours}h ${minutes}m ${seconds}s`)
       }
     }, 1000)
-
     return () => clearInterval(timer)
   }, [expectedAt])
-
   return <span>{timeLeft}</span>
 }
-
 export default function QueueDetails() {
   const { isLoading: authLoading, isAuthenticated } = useAuth(true)
   const router = useRouter()
@@ -74,7 +64,6 @@ export default function QueueDetails() {
   const supabase = useSupabaseClient()
   const [topReviews, setTopReviews] = useState([])
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
-
   useEffect(() => {
   if (isAuthenticated && id) {
     dispatch(fetchQueueDetails(id)).then((action) => {
@@ -84,16 +73,13 @@ export default function QueueDetails() {
     })
   }
 }, [isAuthenticated, id, dispatch])
-
   useEffect(() => {
     if (error) {
       message.error('Failed to fetch queue details. Please try again.')
     }
   }, [error])
-
   useEffect(() => {
     if (!queue || !isAuthenticated || !id) return
-
     const channel = supabase
       .channel(`queue_${id}`)
       .on('postgres_changes', { 
@@ -107,12 +93,10 @@ export default function QueueDetails() {
         }
       })
       .subscribe()
-
     return () => {
       supabase.removeChannel(channel)
     }
   }, [queue, id, isAuthenticated, supabase, dispatch])
-
   const handlePaymentSuccess = async (paymentId) => {
     try {
       const response = await fetch('/api/queue/join', {
@@ -130,7 +114,6 @@ export default function QueueDetails() {
       message.error('Failed to join queue. Please try again.');
     }
   };
-
   const handleLeaveQueue = async () => {
     try {
       await dispatch(leaveQueue(id)).unwrap()
@@ -139,7 +122,6 @@ export default function QueueDetails() {
       message.error('Failed to leave queue. Please try again.')
     }
   }
-
   if (authLoading || queueLoading) {
     return (
       <Layout>
@@ -147,11 +129,9 @@ export default function QueueDetails() {
       </Layout>
     )
   }
-
   if (!isAuthenticated) {
     return null // The useAuth hook will handle redirection
   }
-
   return (
     <Layout>
       <QueueErrorBoundary>
@@ -195,7 +175,6 @@ export default function QueueDetails() {
     </div>
   </div>
 </div>
-
             <div className="max-w-4xl mx-auto mt-8 px-4">
               <div className="bg-white rounded-lg shadow-lg overflow-hidden mb-8">
                 <div className="p-6">
@@ -213,9 +192,7 @@ export default function QueueDetails() {
                   </div>
                 </div>
               </div>
-
               <QueueStatus queue={queue} />
-
               <div className="mt-8 bg-white rounded-lg shadow-lg overflow-hidden">
                 <div className="p-6">
                   <h2 className="text-2xl font-bold mb-4">Reviews</h2>
@@ -226,7 +203,6 @@ export default function QueueDetails() {
                 </div>
               </div>
             </div>
-
             <Link href={`/queue/queue-members?id=${id}`}>
   <button className="fixed bottom-36 right-6 bg-green-500 text-white p-4 rounded-full shadow-lg hover:bg-green-600 transition duration-200 z-50">
     <FiUsers size={24} />
@@ -244,7 +220,6 @@ export default function QueueDetails() {
     </Layout>
   )
 }
-
 const QueueInfoItem = ({ icon: Icon, label, value, copyable = false }) => (
   <div className="flex items-center text-gray-700">
     <Icon className="mr-2 text-blue-500" />
@@ -262,7 +237,6 @@ const QueueInfoItem = ({ icon: Icon, label, value, copyable = false }) => (
     )}
   </div>
 )
-
 const QueueStatus = ({ queue }) => (
   <div className={`p-6 rounded-lg shadow-md ${queue.userPosition ? 'bg-blue-100' : 'bg-yellow-100'}`}>
     <h3 className={`text-2xl font-bold mb-4 ${queue.userPosition ? 'text-blue-800' : 'text-yellow-800'}`}>
@@ -286,14 +260,12 @@ const QueueStatus = ({ queue }) => (
     </div>
   </div>
 )
-
 const StatusCard = ({ label, value }) => (
   <div className="bg-white p-4 rounded-lg shadow">
     <p className="text-lg text-blue-600 mb-1">{label}</p>
     <p className="text-3xl font-bold text-blue-800">{value}</p>
   </div>
 )
-
 const ReviewList = ({ reviews, queueId }) => (
   <>
     {reviews.length > 0 ? (
@@ -334,7 +306,6 @@ const ReviewList = ({ reviews, queueId }) => (
     )}
   </>
 )
-
 const QueueNotFound = () => (
   <div className="flex flex-col items-center justify-center h-64">
     <FiAlertCircle className="text-5xl text-red-500 mb-4" />
@@ -345,7 +316,6 @@ const QueueNotFound = () => (
     </Link>
   </div>
 )
-
 const AnimatedSuccessModal = ({ isOpen, onClose }) => {
   return (
     <motion.div
