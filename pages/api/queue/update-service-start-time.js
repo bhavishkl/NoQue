@@ -13,11 +13,14 @@ export default async function handler(req, res) {
 
     try {
       // Convert the serviceStartTime to UTC
-      const utcServiceStartTime = new Date(`1970-01-01T${serviceStartTime}Z`).toUTCString().split(' ')[4]
+      const [hours, minutes] = serviceStartTime.split(':')
+      const utcServiceStartTime = new Date()
+      utcServiceStartTime.setUTCHours(parseInt(hours, 10), parseInt(minutes, 10), 0, 0)
+      const utcTimeString = utcServiceStartTime.toISOString().substr(11, 8)
 
       const { data, error } = await supabase
         .from('queues')
-        .update({ service_start_time: utcServiceStartTime })
+        .update({ service_start_time: utcTimeString })
         .eq('id', queueId)
         .single()
 
