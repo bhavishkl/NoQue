@@ -61,11 +61,10 @@ export default function ManageQueue() {
         .eq('id', id)
         .single()
 
-      if (error) throw error
-      setQueue(data)
-      setIsPaused(data.is_paused || false)
-      setServiceStartTime(data.service_start_time ? dayjs(data.service_start_time, 'HH:mm:ss') : null)
-    } catch (error) {
+        if (error) throw error
+        setQueue(data)
+        setIsPaused(data.is_paused || false)
+        setServiceStartTime(data.service_start_time ? dayjs(data.service_start_time, 'HH:mm:ss') : null)       } catch (error) {
       console.error('Error fetching queue details:', error)
       toast.error('Failed to fetch queue details')
     }
@@ -242,12 +241,13 @@ export default function ManageQueue() {
               <FiClock className="h-5 w-5 text-gray-400" />
             </div>
             <TimePicker
-              use12Hours
-              format="h:mm a"
-              value={serviceStartTime}
-              onChange={handleServiceStartTimeChange}
-              className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            />
+            use12Hours
+            format="h:mm a"
+            value={serviceStartTime}
+            onChange={handleServiceStartTimeChange}
+            className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+           utcOffset={0}
+          />
           </div>
         </div>
         {loading ? (

@@ -20,45 +20,44 @@ import { motion } from 'framer-motion';
 const ReviewForm = dynamic(() => import('../../components/ReviewForm'), {
   loading: () => <p className="text-center text-gray-500">Loading review form...</p>,
 })
+
 function formatServiceStartTime(timeString) {
   if (!timeString) return 'Not set';
   
-  // Assuming the timeString is in HH:mm:ss format
+  // Assuming the timeString is in HH:mm:ss format in UTC
   const [hours, minutes] = timeString.split(':');
   const date = new Date();
-  date.setHours(parseInt(hours, 10));
-  date.setMinutes(parseInt(minutes, 10));
-
-  return format(date, 'h:mm a');
+  date.setUTCHours(parseInt(hours, 10), parseInt(minutes, 10));
+  return format(date, 'h:mm a', { timeZone: 'Asia/Kolkata' });
 }
 
 const Countdown = ({ expectedAt }) => {
-  const [timeLeft, setTimeLeft] = useState('');
-  
+  const [timeLeft, setTimeLeft] = useState('')
+
   useEffect(() => {
     const timer = setInterval(() => {
-      const now = new Date();
-      const expected = new Date(expectedAt);
-      const diff = expected.getTime() - now.getTime();
-      
-      if (diff <= 0) {
-        setTimeLeft('Time expired');
-        clearInterval(timer);
+      const now = new Date()
+      const expected = new Date(expectedAt)
+      if (now >= expected) {
+        setTimeLeft('Time expired')
+        clearInterval(timer)
       } else {
-        const hours = Math.floor(diff / (1000 * 60 * 60));
-        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-        const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-        setTimeLeft(`${hours}h ${minutes}m ${seconds}s`);
+        const diff = expected.getTime() - now.getTime()
+        const hours = Math.floor(diff / (1000 * 60 * 60))
+        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
+        const seconds = Math.floor((diff % (1000 * 60)) / 1000)
+        setTimeLeft(`${hours}h ${minutes}m ${seconds}s`)
       }
-    }, 1000);
-    return () => clearInterval(timer);
-  }, [expectedAt]);
+    }, 1000)
+    return () => clearInterval(timer)
+  }, [expectedAt])
 
-  return <span>{timeLeft}</span>;
-};
+  return <span>{timeLeft}</span>
+}
 
 export default function QueueDetails() {
   const { isLoading: authLoading, isAuthenticated } = useAuth(true)
+  
   const router = useRouter()
   const { id } = router.query
   const dispatch = useDispatch()
@@ -239,50 +238,32 @@ const QueueInfoItem = ({ icon: Icon, label, value, copyable = false }) => (
     )}
   </div>
 )
-const QueueStatus = ({ queue }) => {
-  const formatToIST = (dateString) => {
-    const date = new Date(dateString);
-    const istOptions = { 
-      timeZone: 'Asia/Kolkata', 
-      year: 'numeric', 
-      month: 'short', 
-      day: 'numeric', 
-      hour: '2-digit', 
-      minute: '2-digit', 
-      hour12: true 
-    };
-    return new Intl.DateTimeFormat('en-IN', istOptions).format(date);
-  };
-
-  return (
-    <div className={`p-6 rounded-lg shadow-md ${queue.userPosition ? 'bg-blue-100' : 'bg-yellow-100'}`}>
-      <h3 className={`text-2xl font-bold mb-4 ${queue.userPosition ? 'text-blue-800' : 'text-yellow-800'}`}>
-        {queue.userPosition ? 'Your Queue Status' : 'Queue Information'}
-      </h3>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {queue.userPosition ? (
-          <>
-            <StatusCard label="Your position" value={queue.userPosition} />
-            <StatusCard label="Estimated wait time" value={`${queue.userEstimatedWaitTime} min`} />
-            {queue.userExpectedTime && (
-              <>
-                <StatusCard label="Expected service time" value={formatToIST(queue.userExpectedTime)} />
-                <StatusCard label="Time until your turn" value={<Countdown expectedAt={queue.userExpectedTime} />} />
-              </>
-            )}
-          </>
-        ) : (
-          <StatusCard label="Estimated wait time" value={`${queue.estimatedWaitTime} min`} />
-        )}
-      </div>
+const QueueStatus = ({ queue }) => (
+  <div className={`p-6 rounded-lg shadow-md ${queue.userPosition ? 'bg-blue-100' : 'bg-yellow-100'}`}>
+    <h3 className={`text-2xl font-bold mb-4 ${queue.userPosition ? 'text-blue-800' : 'text-yellow-800'}`}>
+      {queue.userPosition ? 'Your Queue Status' : 'Queue Information'}
+    </h3>
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {queue.userPosition ? (
+        <>
+          <StatusCard label="Your position" value={queue.userPosition} />
+          <StatusCard label="Estimated wait time" value={`${queue.userEstimatedWaitTime} min`} />
+          {queue.userExpectedTime && (
+            <>
+             <StatusCard label="Expected service time" value={new Date(queue.userExpectedTime).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })} />
+             <StatusCard label="Time until your turn" value={<Countdown expectedAt={queue.userExpectedTime} />} />
+             </>
+          )}
+        </>
+      ) : (
+        <StatusCard label="Estimated wait time" value={`${queue.estimatedWaitTime} min`} />
+      )}
     </div>
-  );
-};
-
+  </div>
+)
 const StatusCard = ({ label, value }) => (
   <div className="bg-white p-4 rounded-lg shadow">
-    <p className="text-lg text-blue-600 mb-1">{label}</p>
-    <p className="text-3xl font-bold text-blue-800">{value}</p>
+    <p className="text-lg text-blue-600 mb-1">{label}</p><p className="text-3xl font-bold text-blue-800">{value}</p>
   </div>
 )
 const ReviewList = ({ reviews, queueId }) => (
