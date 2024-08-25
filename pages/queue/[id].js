@@ -31,9 +31,14 @@ function formatServiceStartTime(timeString) {
   date.setHours(parseInt(hours, 10));
   date.setMinutes(parseInt(minutes, 10));
   
-  return format(date, 'h:mm a');
+  // Format the time in IST
+  return date.toLocaleString('en-US', { 
+    hour: 'numeric', 
+    minute: 'numeric', 
+    hour12: true, 
+    timeZone: 'Asia/Kolkata' 
+  });
 }
-
 const Countdown = ({ expectedAt }) => {
   const [timeLeft, setTimeLeft] = useState('')
 
