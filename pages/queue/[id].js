@@ -250,7 +250,7 @@ const QueueStatus = ({ queue }) => (
           <StatusCard label="Estimated wait time" value={`${queue.userEstimatedWaitTime} min`} />
           {queue.userExpectedTime && (
             <>
-             <StatusCard label="Expected service time" value={new Date(queue.userExpectedTime).toLocaleString()} />
+             <StatusCard label="Expected service time" value={new Date(queue.userExpectedTime).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })} />
              <StatusCard label="Time until your turn" value={<Countdown expectedAt={queue.userExpectedTime} />} />
              </>
           )}
