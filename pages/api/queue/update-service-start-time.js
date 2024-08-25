@@ -12,9 +12,12 @@ export default async function handler(req, res) {
     const { queueId, serviceStartTime } = req.body
 
     try {
+      // Convert the serviceStartTime to UTC
+      const utcServiceStartTime = new Date(`1970-01-01T${serviceStartTime}Z`).toUTCString().split(' ')[4]
+
       const { data, error } = await supabase
         .from('queues')
-        .update({ service_start_time: serviceStartTime })
+        .update({ service_start_time: utcServiceStartTime })
         .eq('id', queueId)
         .single()
 
