@@ -68,15 +68,14 @@ export default async function handler(req, res) {
         queueData.isJoined = true
         queueData.expectedAt = userPosition.expected_at
       
-        // Convert previous user's join time to UTC
-        const prevUserJoinTime = previousMember.length > 1 ? new Date(previousMember[1].created_at) : null
-        queueData.previousMemberJoinTimeUTC = prevUserJoinTime ? prevUserJoinTime.toUTCString() : null
+        // Get previous user's join time
+        const prevUserJoinTime = previousMember.length > 1 ? previousMember[1].created_at : null
+        queueData.previousMemberJoinTime = prevUserJoinTime
 
-        // Calculate user's expected time in UTC
-      // Calculate user's expected time in UTC
+        // Calculate user's expected time
 const now = new Date()
 const serviceStartTime = queueData.service_start_time 
-  ? new Date(`${now.toUTCString().split(' ').slice(0, 4).join(' ')} ${queueData.service_start_time}Z`)
+  ? new Date(`${now.toDateString()} ${queueData.service_start_time}`)
   : now
 const timeUntilServiceStart = Math.max(0, serviceStartTime.getTime() - now.getTime())
 const userExpectedTime = new Date(now.getTime() + timeUntilServiceStart + queueData.userEstimatedWaitTime * 60000)
