@@ -34,7 +34,6 @@ function formatServiceStartTime(timeString) {
 
 const Countdown = ({ expectedAt }) => {
   const [timeLeft, setTimeLeft] = useState('')
-    
   
   useEffect(() => {
     const timer = setInterval(() => {
