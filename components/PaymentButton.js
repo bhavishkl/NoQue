@@ -36,9 +36,9 @@ export default function PaymentButton({ amount, onPaymentSuccess }) {
 
       if (!response.ok) {
         const errorData = await response.json();
-        console.error('Payment creation error:', errorData);
-        throw new Error(`HTTP error! status: ${response.status}, message: ${JSON.stringify(errorData)}`);
+        throw new Error(`HTTP error! status: ${response.status}, message: ${errorData.error}`);
       }
+
       const data = await response.json();
       console.log('Payment creation response:', data);
 
