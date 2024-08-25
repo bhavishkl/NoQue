@@ -52,8 +52,10 @@ const Countdown = ({ expectedAt }) => {
     }, 1000)
     return () => clearInterval(timer)
   }, [expectedAt])
+
   return <span>{timeLeft}</span>
 }
+
 export default function QueueDetails() {
   const { isLoading: authLoading, isAuthenticated } = useAuth(true)
   const router = useRouter()
@@ -248,8 +250,8 @@ const QueueStatus = ({ queue }) => (
           <StatusCard label="Estimated wait time" value={`${queue.userEstimatedWaitTime} min`} />
           {queue.userExpectedTime && (
             <>
-              <StatusCard label="Expected service time" value={queue.userExpectedTime} />
-              <StatusCard label="Time until your turn" value={<Countdown expectedAt={queue.userExpectedTime} />} />
+             <StatusCard label="Expected service time" value={new Date(queue.userExpectedTime).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })} />
+             <StatusCard label="Time until your turn" value={<Countdown expectedAt={queue.userExpectedTime} />} />
             </>
           )}
         </>

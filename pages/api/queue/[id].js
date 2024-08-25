@@ -74,12 +74,12 @@ if (queueError) throw queueError
         
           // Calculate user's expected time in UTC
           const now = new Date()
-          const serviceStartTime = queueData.service_start_time 
-            ? new Date(`${now.toUTCString().split(' ').slice(0, 4).join(' ')} ${queueData.service_start_time}Z`) 
-            : now
-          const timeUntilServiceStart = Math.max(0, serviceStartTime - now)
-          const userExpectedTime = new Date(now.getTime() + timeUntilServiceStart + queueData.userEstimatedWaitTime * 60000)
-          queueData.userExpectedTime = userExpectedTime.toUTCString()
+const serviceStartTime = queueData.service_start_time 
+  ? new Date(`${now.toDateString()} ${queueData.service_start_time}`)
+  : now
+const timeUntilServiceStart = Math.max(0, serviceStartTime - now)
+const userExpectedTime = new Date(now.getTime() + timeUntilServiceStart + queueData.userEstimatedWaitTime * 60000)
+queueData.userExpectedTime = userExpectedTime.toISOString()
         } else {
           queueData.isJoined = false
         }
