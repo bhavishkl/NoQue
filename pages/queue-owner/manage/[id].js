@@ -171,7 +171,7 @@ export default function ManageQueue() {
       toast.error('Failed to update service start time')
     }
   }
-
+  
   if (!session) {
     return (
       <Layout>

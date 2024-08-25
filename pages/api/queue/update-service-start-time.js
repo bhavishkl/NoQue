@@ -10,22 +10,17 @@ export default async function handler(req, res) {
 
   if (req.method === 'PUT') {
     const { queueId, serviceStartTime } = req.body
-
+  
     try {
-      // Convert the serviceStartTime to UTC
-      const [hours, minutes] = serviceStartTime.split(':')
-      const utcServiceStartTime = new Date()
-      utcServiceStartTime.setUTCHours(parseInt(hours, 10), parseInt(minutes, 10), 0, 0)
-      const utcTimeString = utcServiceStartTime.toISOString().substr(11, 8)
-
+      // Store the serviceStartTime as is (it's already in IST)
       const { data, error } = await supabase
         .from('queues')
-        .update({ service_start_time: utcTimeString })
+        .update({ service_start_time: serviceStartTime })
         .eq('id', queueId)
         .single()
-
+  
       if (error) throw error
-
+  
       return res.status(200).json({ message: 'Service start time updated successfully' })
     } catch (error) {
       console.error('Error updating service start time:', error)
