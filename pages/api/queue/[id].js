@@ -75,10 +75,9 @@ if (queueError) throw queueError
           // Calculate user's expected time in UTC
           const now = new Date();
           const serviceStartTime = queueData.service_start_time 
-            ? new Date(`${now.toDateString()} ${queueData.service_start_time}`)
+            ? new Date(`${now.toISOString().split('T')[0]}T${queueData.service_start_time}.000Z`)
             : now;
-          serviceStartTime.setHours(serviceStartTime.getHours() + 5, serviceStartTime.getMinutes() + 30); // Convert to IST
-          const timeUntilServiceStart = Math.max(0, serviceStartTime - now);
+          const timeUntilServiceStart = Math.max(0, serviceStartTime.getTime() - now.getTime());
           const userExpectedTime = new Date(now.getTime() + timeUntilServiceStart + queueData.userEstimatedWaitTime * 60000);
           queueData.userExpectedTime = userExpectedTime.toISOString();
         } else {

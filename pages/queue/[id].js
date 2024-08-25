@@ -242,7 +242,8 @@ const QueueInfoItem = ({ icon: Icon, label, value, copyable = false }) => (
 const QueueStatus = ({ queue }) => {
   const formatToIST = (dateString) => {
     const date = new Date(dateString);
-    return date.toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'medium', timeStyle: 'medium' });
+    const istOptions = { timeZone: 'Asia/Kolkata', year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true };
+    return new Intl.DateTimeFormat('en-IN', istOptions).format(date);
   };
 
   return (
